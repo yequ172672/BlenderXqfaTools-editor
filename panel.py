@@ -23,6 +23,8 @@ class MAIN_PT_XBonePanel(bpy.types.Panel):
                      text="其他工具", icon='TOOL_SETTINGS')
         row.prop_enum(context.scene, 'active_xbone_subpanel', 'MappingTools',
                      text="映射工具", icon='LINKED')
+        row.prop_enum(context.scene, 'active_xbone_subpanel', 'GeneralTools',
+                     text="综合工具", icon='PLUGIN')
         
 
 class XBONE_OT_switch_subpanel(bpy.types.Operator):
@@ -59,7 +61,8 @@ def register():
             ('BoneTools', '骨骼与顶点组工具', ''),
             ('AttributeTools', '物体属性工具', ''),
             ('OtherTools', '其他工具', ''),
-            ('MappingTools', '映射工具', '')
+            ('MappingTools', '映射工具', ''),
+            ('GeneralTools', '综合工具', '')
         ],
         default='BoneTools'
     )

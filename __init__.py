@@ -19,6 +19,7 @@ from .attribute_tools import vertex_groups, shapekey, uv, vertex_colors, extra_o
 from .other_tools import misc
 from .material_tools import material, bake_node_groups, material_snapshot, material_batch_rename
 from .mapping_tools import modtoolkit, abp_generator
+from .general_tools import y_tools
 
 class XqfaPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -64,6 +65,7 @@ def register():
     bake_node_groups.register()
     modtoolkit.register()
     abp_generator.register()
+    y_tools.register()
 
 # 注销插件
 def unregister():
@@ -85,6 +87,7 @@ def unregister():
     bake_node_groups.unregister()
     modtoolkit.unregister()
     abp_generator.unregister()
+    y_tools.unregister()
 
 
 if __name__ == "__main__":
