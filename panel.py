@@ -7,6 +7,7 @@ class MAIN_PT_XBonePanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'XQFA'
+    bl_order = -1
 
     def draw(self, context):
         layout = self.layout
@@ -20,6 +21,8 @@ class MAIN_PT_XBonePanel(bpy.types.Panel):
                      text="属性工具", icon='GROUP_VERTEX')
         row.prop_enum(context.scene, 'active_xbone_subpanel', 'OtherTools',
                      text="其他工具", icon='TOOL_SETTINGS')
+        row.prop_enum(context.scene, 'active_xbone_subpanel', 'MappingTools',
+                     text="映射工具", icon='LINKED')
         
 
 class XBONE_OT_switch_subpanel(bpy.types.Operator):
@@ -55,7 +58,8 @@ def register():
         items=[
             ('BoneTools', '骨骼与顶点组工具', ''),
             ('AttributeTools', '物体属性工具', ''),
-            ('OtherTools', '其他工具', '')
+            ('OtherTools', '其他工具', ''),
+            ('MappingTools', '映射工具', '')
         ],
         default='BoneTools'
     )

@@ -18,6 +18,7 @@ from .bone_tools import bone_and_vertex_groups, bone_pose, bone_edit, mod_armatu
 from .attribute_tools import vertex_groups, shapekey, uv, vertex_colors, extra_object_info
 from .other_tools import misc
 from .material_tools import material, bake_node_groups, material_snapshot, material_batch_rename
+from .mapping_tools import modtoolkit, abp_generator
 
 class XqfaPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -61,6 +62,8 @@ def register():
     material_snapshot.register()
     material_batch_rename.register()
     bake_node_groups.register()
+    modtoolkit.register()
+    abp_generator.register()
 
 # 注销插件
 def unregister():
@@ -80,6 +83,8 @@ def unregister():
     material_snapshot.unregister()
     material_batch_rename.unregister()
     bake_node_groups.unregister()
+    modtoolkit.unregister()
+    abp_generator.unregister()
 
 
 if __name__ == "__main__":
