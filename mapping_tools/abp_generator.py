@@ -2,7 +2,7 @@
 import bpy
 import uuid
 from bpy.types import Panel, Operator, Scene
-from bpy.props import StringProperty
+from bpy.props import StringProperty, EnumProperty
 from bpy.utils import register_class, unregister_class
 
 
@@ -24,6 +24,7 @@ LANG = {
         "report.empty_path": "ABP Asset Path cannot be empty",
         "report.save_error": "Failed to save file",
         "report.success": " nodes generated, saved and copied to clipboard",
+        "abp.version": "UE Version",
     },
     "zh": {
         "ABP_PT_generator.label": "ABP 生成器",
@@ -38,6 +39,7 @@ LANG = {
         "report.empty_path": "ABP 资产路径不能为空",
         "report.save_error": "文件保存失败",
         "report.success": " 个约束节点已生成，已保存并复制到剪贴板",
+        "abp.version": "UE 版本",
     },
 }
 
@@ -126,13 +128,77 @@ def _build_abp_node(
     return "\n".join(lines)
 
 
-def generate_abp_text(bone_mappings, asset_path, start_x=-912, step_x=288, start_y=64, step_y=256, cols=5):
+def _build_abp_node_ue5(
+    node_name, bone_to_modify, target_bone,
+    pos_x, pos_y, node_guid, asset_path,
+    pin_comp_pose_id, pin_b_alpha_id, pin_alpha_id,
+    pin_alpha_curve_id, pin_weight_id, pin_pose_id,
+    component_pose_linked_to, pose_linked_to_segment,
+):
+    """Build a single ABP constraint node text block (UE 5.3 format)."""
+    # UE5 does not support spaces in bone names - replace with hyphens
+    bone_to_modify = bone_to_modify.replace(" ", "-")
+    target_bone = target_bone.replace(" ", "-")
+    PV = "PinType.PinValueType=()"
+    PC = "PinType.ContainerType=None"
+    PF = ("PinType.bIsReference=False,PinType.bIsConst=False,"
+          "PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,"
+          "PinType.bSerializeAsSinglePrecisionFloat=False")
+    PG = "PersistentGuid=00000000000000000000000000000000"
+    BV = ("bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,"
+          "bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,")
+    NS = "NSLOCTEXT"
+    SC = '"/Script/CoreUObject.ScriptStruct\'/Script/Engine.ComponentSpacePoseLink\'"'
+    export_path = f"/Script/AnimGraph.AnimGraphNode_Constraint\'{asset_path}:{node_name}\'"
+
+    lines = [
+        # 1: Begin Object header (with ExportPath)
+        f'Begin Object Class=/Script/AnimGraph.AnimGraphNode_Constraint Name="{node_name}" ExportPath="{export_path}"',
+        # 2: Node data
+        f'   Node=(BoneToModify=(BoneName="{bone_to_modify}"),ConstraintSetup=((TargetBone=(BoneName="{target_bone}"),TransformType=Rotation)),ConstraintWeights=(1.000000))',
+        # 3-14: ShowPinForProperties (12 entries, UE5.3 reordered)
+        f'   ShowPinForProperties(0)=(PropertyName="ComponentPose",PropertyFriendlyName="Component Pose",PropertyTooltip={NS}("UObjectToolTips", "AnimNode_SkeletalControlBase:ComponentPose", "Input link"),CategoryName="Links",bShowPin=True)',
+        f'   ShowPinForProperties(1)=(PropertyName="LODThreshold",PropertyFriendlyName="LOD Threshold",PropertyTooltip={NS}("", "{_generate_guid()}", "* Max LOD that this node is allowed to run\\n* For example if you have LODThreshold to be 2, it will run until LOD 2 (based on 0 index)\\n* when the component LOD becomes 3, it will stop update/evaluate\\n* currently transition would be issue and that has to be re-visited"),CategoryName="Performance")',
+        '   ShowPinForProperties(2)=(PropertyName="AlphaInputType",PropertyFriendlyName="Alpha Input Type",CategoryName="Alpha")',
+        '   ShowPinForProperties(3)=(PropertyName="bAlphaBoolEnabled",PropertyFriendlyName="bEnabled",CategoryName="Alpha",bShowPin=True,bCanToggleVisibility=True)',
+        f'   ShowPinForProperties(4)=(PropertyName="Alpha",PropertyFriendlyName="Alpha",PropertyTooltip={NS}("UObjectToolTips", "AnimNode_SkeletalControlBase:Alpha", "Current strength of the skeletal control"),CategoryName="Alpha",bShowPin=True,bCanToggleVisibility=True)',
+        '   ShowPinForProperties(5)=(PropertyName="AlphaScaleBias",PropertyFriendlyName="Alpha Scale Bias",CategoryName="Alpha")',
+        '   ShowPinForProperties(6)=(PropertyName="AlphaBoolBlend",PropertyFriendlyName="Blend Settings",CategoryName="Alpha")',
+        '   ShowPinForProperties(7)=(PropertyName="AlphaCurveName",PropertyFriendlyName="Alpha Curve Name",CategoryName="Alpha",bShowPin=True,bCanToggleVisibility=True)',
+        '   ShowPinForProperties(8)=(PropertyName="AlphaScaleBiasClamp",PropertyFriendlyName="Alpha Scale Bias Clamp",CategoryName="Alpha")',
+        f'   ShowPinForProperties(9)=(PropertyName="BoneToModify",PropertyFriendlyName="Bone to Modify",PropertyTooltip={NS}("UObjectToolTips", "AnimNode_Constraint:BoneToModify", "Name of bone to control. This is the main bone chain to modify from. *"),CategoryName="SkeletalControl")',
+        f'   ShowPinForProperties(10)=(PropertyName="ConstraintSetup",PropertyFriendlyName="Constraint Setup",PropertyTooltip={NS}("UObjectToolTips", "AnimNode_Constraint:ConstraintSetup", "List of constraints"),CategoryName="Constraints")',
+        f'   ShowPinForProperties(11)=(PropertyName="ConstraintWeights",PropertyFriendlyName="Constraint Weights",PropertyTooltip={NS}("UObjectToolTips", "AnimNode_Constraint:ConstraintWeights", "Weight data - post edit syncs up to ConstraintSetups"),CategoryName="Runtime",bShowPin=True,bCanToggleVisibility=True)',
+        # 15-17: Position + GUID (no ErrorType in UE5.3)
+        f'   NodePosX={pos_x}',
+        f'   NodePosY={pos_y}',
+        f'   NodeGuid={node_guid}',
+        # 18: ComponentPose Pin
+        f'   CustomProperties Pin (PinId={pin_comp_pose_id},PinName="ComponentPose",PinFriendlyName={NS}("", "{_generate_guid()}", "Component Pose"),PinToolTip="Component Pose\\n\u7ec4\u4ef6\u7a7a\u95f4\u59ff\u52bf\u94fe\u63a5 \u7ed3\u6784\\n\\n\u8f93\u5165\u94fe\u63a5",PinType.PinCategory="struct",PinType.PinSubCategory="",PinType.PinSubCategoryObject={SC},PinType.PinSubCategoryMemberReference=(),{PV},{PC},{PF},DefaultValue="(LinkID=-1,SourceLinkID=-1)",AutogeneratedDefaultValue="(LinkID=-1,SourceLinkID=-1)",LinkedTo={component_pose_linked_to},{PG},{BV})',
+        # 19: bAlphaBoolEnabled Pin
+        f'   CustomProperties Pin (PinId={pin_b_alpha_id},PinName="bAlphaBoolEnabled",PinFriendlyName={NS}("", "{_generate_guid()}", "bEnabled"),PinToolTip="Enabled\\n\u5e03\u5c14",PinType.PinCategory="bool",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),{PV},{PC},{PF},DefaultValue="True",AutogeneratedDefaultValue="True",{PG},bHidden=True,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)',
+        # 20: Alpha Pin (real/float type in UE5)
+        f'   CustomProperties Pin (PinId={pin_alpha_id},PinName="Alpha",PinFriendlyName={NS}("", "{_generate_guid()}", "Alpha"),PinToolTip="Alpha\\n\u6d6e\u70b9\uff08\u5355\u7cbe\u5ea6\uff09\\n\\n\u9aa8\u9abc\u63a7\u5236\u7684\u5f53\u524d\u5f3a\u5ea6",PinType.PinCategory="real",PinType.PinSubCategory="float",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),{PV},{PC},{PF},DefaultValue="1.000000",AutogeneratedDefaultValue="1.000000",{PG},{BV})',
+        # 21: AlphaCurveName Pin
+        f'   CustomProperties Pin (PinId={pin_alpha_curve_id},PinName="AlphaCurveName",PinFriendlyName={NS}("", "{_generate_guid()}", "Alpha Curve Name"),PinToolTip="Alpha Curve Name\\n\u547d\u540d",PinType.PinCategory="name",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),{PV},{PC},{PF},DefaultValue="None",AutogeneratedDefaultValue="None",{PG},bHidden=True,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)',
+        # 22: ConstraintWeights_0 Pin (real/float type in UE5)
+        f'   CustomProperties Pin (PinId={pin_weight_id},PinName="ConstraintWeights_0",PinFriendlyName=LOCGEN_FORMAT_NAMED({NS}("K2Node", "PinFriendlyNameWithIndex", "{{PinName}} {{Index}}"), "Index", 0, "PinName", {NS}("", "{_generate_guid()}", "Constraint Weights")),PinToolTip="Constraint Weights 0\\n\u6d6e\u70b9\uff08\u5355\u7cbe\u5ea6\uff09\\n\\n\u6743\u91cd\u6570\u636e - \u5c06\u7f16\u8f91\u540c\u6b65\u516c\u5e03\u5230ConstraintSetups",PinType.PinCategory="real",PinType.PinSubCategory="float",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),{PV},{PC},{PF},DefaultValue="1.000000",AutogeneratedDefaultValue="0.0",{PG},{BV})',
+        # 23: Pose Pin (output)
+        f'   CustomProperties Pin (PinId={pin_pose_id},PinName="Pose",Direction="EGPD_Output",PinType.PinCategory="struct",PinType.PinSubCategory="",PinType.PinSubCategoryObject={SC},PinType.PinSubCategoryMemberReference=(),{PV},{PC},{PF},{pose_linked_to_segment}{PG},{BV})',
+        # 24: End Object
+        'End Object',
+    ]
+    return "\n".join(lines)
+
+
+def generate_abp_text(bone_mappings, asset_path, version="UE4", start_x=-912, step_x=288, start_y=64, step_y=256, cols=5):
     """
     Generate complete ABP constraint node chain text.
 
     Args:
         bone_mappings: list of (bone_to_modify, target_bone) tuples
         asset_path: UE asset path e.g. "/Game/Character/ABP_name.ABP_name"
+        version: "UE4" or "UE5" to select node format
         start_x: first node X position
         step_x: X spacing between nodes
         start_y: first row Y position
@@ -184,22 +250,41 @@ def generate_abp_text(bone_mappings, asset_path, start_x=-912, step_x=288, start
             nxt = nodes[i + 1]
             pose_linked_to_segment = f"LinkedTo=({nxt['name']} {nxt['pin_comp_pose']}),"
 
-        block = _build_abp_node(
-            node_name=node["name"],
-            bone_to_modify=bone_to_modify,
-            target_bone=target_bone,
-            pos_x=pos_x,
-            pos_y=pos_y,
-            node_guid=node["node_guid"],
-            pin_comp_pose_id=node["pin_comp_pose"],
-            pin_b_alpha_id=node["pin_b_alpha"],
-            pin_alpha_id=node["pin_alpha"],
-            pin_alpha_curve_id=node["pin_alpha_curve"],
-            pin_weight_id=node["pin_weight"],
-            pin_pose_id=node["pin_pose"],
-            component_pose_linked_to=comp_pose_linked_to,
-            pose_linked_to_segment=pose_linked_to_segment,
-        )
+        if version == "UE5":
+            block = _build_abp_node_ue5(
+                node_name=node["name"],
+                bone_to_modify=bone_to_modify,
+                target_bone=target_bone,
+                pos_x=pos_x,
+                pos_y=pos_y,
+                node_guid=node["node_guid"],
+                asset_path=asset_path,
+                pin_comp_pose_id=node["pin_comp_pose"],
+                pin_b_alpha_id=node["pin_b_alpha"],
+                pin_alpha_id=node["pin_alpha"],
+                pin_alpha_curve_id=node["pin_alpha_curve"],
+                pin_weight_id=node["pin_weight"],
+                pin_pose_id=node["pin_pose"],
+                component_pose_linked_to=comp_pose_linked_to,
+                pose_linked_to_segment=pose_linked_to_segment,
+            )
+        else:
+            block = _build_abp_node(
+                node_name=node["name"],
+                bone_to_modify=bone_to_modify,
+                target_bone=target_bone,
+                pos_x=pos_x,
+                pos_y=pos_y,
+                node_guid=node["node_guid"],
+                pin_comp_pose_id=node["pin_comp_pose"],
+                pin_b_alpha_id=node["pin_b_alpha"],
+                pin_alpha_id=node["pin_alpha"],
+                pin_alpha_curve_id=node["pin_alpha_curve"],
+                pin_weight_id=node["pin_weight"],
+                pin_pose_id=node["pin_pose"],
+                component_pose_linked_to=comp_pose_linked_to,
+                pose_linked_to_segment=pose_linked_to_segment,
+            )
         result_blocks.append(block)
 
     return "\n".join(result_blocks)
@@ -244,8 +329,9 @@ class ABPGeneratorPanel(Panel):
         # ABP asset path input
         layout.prop(scene, "abp_asset_path", text=lang["ABP_PT_generator.asset_path"])
 
-        # Generate button
+        # Version selector + Generate button
         row = layout.row(align=True)
+        row.prop(scene, "abp_version", text=lang["abp.version"])
         row.operator("abp.generate_text", text=lang["ABP_PT_generator.generate"], icon="FILE_TEXT")
 
         # Node count status
@@ -300,7 +386,8 @@ class GenerateABPText(Operator):
 
         # 2. Generate ABP text
         asset_path = scene.abp_asset_path.strip()
-        result_text = generate_abp_text(bone_mappings, asset_path)
+        version = scene.abp_version
+        result_text = generate_abp_text(bone_mappings, asset_path, version=version)
 
         # 3. Save to file
         try:
@@ -346,6 +433,15 @@ def register():
         description="UE4/5 Animation Blueprint asset path, e.g. /Game/Character/ABP_name.ABP_name",
         default="/Game/Character/ABP_example.ABP_example",
     )
+    Scene.abp_version = EnumProperty(
+        name="UE Version",
+        description="Target Unreal Engine version for ABP node format",
+        items=[
+            ("UE4", "4.26", "UE 4.26 format"),
+            ("UE5", "5.3", "UE 5.3 format"),
+        ],
+        default="UE4",
+    )
 
 
 def unregister():
@@ -353,3 +449,4 @@ def unregister():
         unregister_class(cls)
 
     del Scene.abp_asset_path
+    del Scene.abp_version
