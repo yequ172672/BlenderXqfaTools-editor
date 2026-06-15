@@ -20,6 +20,8 @@ from bpy.utils import register_class, unregister_class
 from bl_operators.presets import AddPresetBase
 import os
 import json
+import re
+import math
 
 
 class Localization:
@@ -72,6 +74,24 @@ class Localization:
             "creditpanel.label": "Credit",
             "creditpanel.github": "Github: 0w0-Yui",
             "creditpanel.bilibili": "bilibili: 0w0-Yui",
+            # from bones
+            "my_list.add_from_bones": "from bones",
+            "my_list.add_from_bones.tip": "Add mappings from selected bones (active bone as target)",
+            "my_list.reverse_mappings": "reverse",
+            "my_list.reverse_mappings.tip": "Reverse all mappings in the list (swap source and target)",
+            "my_list.sort_by_name": "sort by name",
+            "my_list.sort_by_name.tip": "Sort mapping list alphabetically by source bone name",
+            "my_list.sort_by_hierarchy": "sort by hierarchy",
+            "my_list.sort_by_hierarchy.tip": "Sort mapping list by target bone hierarchy depth",
+            # auto map
+            "auto_map.label": "Auto Bone Mapping",
+            "auto_map.src": "Source Armature",
+            "auto_map.tgt": "Target Armature",
+            "my_list.auto_map": "Auto Map",
+            "my_list.auto_map.tip": "Automatically create core bone mappings from two armatures",
+            "report.need_2_armatures": "Please select two different armatures!",
+            "report.auto_map_done": "Auto mapping complete",
+            "report.no_match": "No bone matches found",
             # report
             "report.no_active_mesh": "no active mesh!",
             "report.no_active_bone": "no bone selected",
@@ -81,6 +101,10 @@ class Localization:
             "report.not_weight_mode": "please enter weight paint mode!",
             "report.name_collision": "name collision found, details see command prompt!",
             "report.done": "done!",
+            "report.not_pose_mode": "please enter pose mode!",
+            "report.need_2_bones": "please select at least 2 bones!",
+            "report.no_active_bone_pose": "no active bone found!",
+            "report.reverse_done": "mappings reversed!",
         },
         "zh": {
             # pointer panel
@@ -130,6 +154,24 @@ class Localization:
             "creditpanel.label": "作者",
             "creditpanel.github": "Github: 0w0-Yui",
             "creditpanel.bilibili": "B站: 0w0-Yui",
+            # from bones
+            "my_list.add_from_bones": "从骨骼添加",
+            "my_list.add_from_bones.tip": "从选中的骨骼添加映射（活跃骨骼为目标，其余为源）",
+            "my_list.reverse_mappings": "反转映射",
+            "my_list.reverse_mappings.tip": "反转映射表中所有条目的源和目标",
+            "my_list.sort_by_name": "按名称排序",
+            "my_list.sort_by_name.tip": "按源骨骼名称字母顺序排序映射表",
+            "my_list.sort_by_hierarchy": "按层级排序",
+            "my_list.sort_by_hierarchy.tip": "按目标骨骼在骨架中的层级深度排序映射表",
+            # auto map
+            "auto_map.label": "自动骨骼映射",
+            "auto_map.src": "源骨架",
+            "auto_map.tgt": "目标骨架",
+            "my_list.auto_map": "自动匹配",
+            "my_list.auto_map.tip": "根据两个骨架自动创建核心骨骼映射",
+            "report.need_2_armatures": "请选择两个不同的骨架",
+            "report.auto_map_done": "自动匹配完成",
+            "report.no_match": "未找到任何匹配",
             # report
             "report.no_active_mesh": "未选中模型",
             "report.no_active_bone": "未选中骨骼",
@@ -139,6 +181,10 @@ class Localization:
             "report.not_weight_mode": "请进入权重模式",
             "report.name_collision": "名字冲突, 详情见控制台输出",
             "report.done": "完成! ",
+            "report.not_pose_mode": "请进入姿态模式",
+            "report.need_2_bones": "请至少选中2根骨骼",
+            "report.no_active_bone_pose": "未找到活跃骨骼",
+            "report.reverse_done": "映射已反转",
         },
     }
 
@@ -153,6 +199,351 @@ class Localization:
 
 
 LANG = Localization.get_localization(bpy.context)
+
+
+# ===========================================================================
+# Auto Bone Mapping - Core Functions
+# ===========================================================================
+
+# -- Bone filtering keywords --
+_BLACKLIST_KEYWORDS = [
+    # Physics
+    "phys", "physics", "cloth", "hair", "skirt", "dress", "breast",
+    "belly", "jiggle", "spring", "dynamic",
+    # IK/FK helpers
+    "ik_", "fk_", "pole", "twist", "roll", "stretch", "ik",
+    # Auxiliary
+    "helper", "dummy", "adj", "shadow", "driver", "mch", "def_", "copy", "tweak",
+    # Decorative
+    "weapon", "slot", "attach", "prop",
+]
+
+_WHITELIST_KEYWORDS = [
+    # Torso
+    "spine", "head", "neck", "pelvis", "hip", "root",
+    # Arms / Hands
+    "arm", "hand", "finger", "thumb",
+    # Legs / Feet
+    "leg", "foot", "toe", "thigh", "calf", "shin",
+    # Shoulders
+    "clavicle", "shoulder", "upperarm", "lowerarm",
+    "upperleg", "lowerleg", "ball",
+]
+
+
+def is_core_bone(bone_name: str) -> bool:
+    """Return True if bone_name belongs to the core skeleton (not physics/IK/aux)."""
+    name_lower = bone_name.lower()
+    # Whitelist takes priority: if any whitelist keyword matches -> keep
+    for kw in _WHITELIST_KEYWORDS:
+        if kw in name_lower:
+            return True
+    # Blacklist: if any blacklist keyword matches -> exclude
+    for kw in _BLACKLIST_KEYWORDS:
+        if kw in name_lower:
+            return False
+    # Default: keep (treat as core if ambiguous)
+    return True
+
+
+# -- Side-prefix stripping for name comparison --
+_SIDE_PREFIXES = [
+    "left_", "right_", "l_", "r_",
+    "left", "right",
+    "lt_", "rt_", "lt", "rt",
+]
+
+
+def _strip_side(name: str) -> str:
+    """Remove common left/right side prefix from a bone name token."""
+    lower = name.lower()
+    for prefix in _SIDE_PREFIXES:
+        if lower.startswith(prefix):
+            return lower[len(prefix):]
+    return lower
+
+
+def _tokenize(name: str) -> list:
+    """Split bone name into lowercase tokens by common separators."""
+    return [t for t in re.split(r"[_. \-]", name.lower()) if t]
+
+
+def name_score(name_a: str, name_b: str) -> float:
+    """Compute name similarity between two bone names -> [0, 1]."""
+    tokens_a = set(_tokenize(name_a))
+    tokens_b = set(_tokenize(name_b))
+    if not tokens_a or not tokens_b:
+        return 0.0
+    # Jaccard similarity on full tokens
+    intersection = tokens_a & tokens_b
+    union = tokens_a | tokens_b
+    jaccard = len(intersection) / len(union) if union else 0.0
+
+    # Side-stripped bonus: compare tokens after removing side prefix
+    stripped_a = set(_strip_side(t) for t in tokens_a)
+    stripped_b = set(_strip_side(t) for t in tokens_b)
+    if stripped_a and stripped_b:
+        s_inter = stripped_a & stripped_b
+        s_union = stripped_a | stripped_b
+        side_bonus = len(s_inter) / len(s_union) if s_union else 0.0
+    else:
+        side_bonus = 0.0
+
+    return jaccard * 0.7 + side_bonus * 0.3
+
+
+def _get_bone_path(bone) -> list:
+    """Return list of bone names from root to this bone (inclusive)."""
+    path = []
+    b = bone
+    while b is not None:
+        path.append(b.name)
+        b = b.parent
+    path.reverse()
+    return path
+
+
+def hierarchy_score(bone_a, bone_b) -> float:
+    """Compute hierarchy path similarity between two bones -> [0, 1]."""
+    path_a = _get_bone_path(bone_a)
+    path_b = _get_bone_path(bone_b)
+    depth_a, depth_b = len(path_a), len(path_b)
+
+    # Depth similarity penalty
+    depth_sim = 1.0 - min(abs(depth_a - depth_b) * 0.2, 1.0)
+
+    # Weighted average of per-level name similarity (higher weight near the bone itself)
+    min_depth = min(depth_a, depth_b)
+    if min_depth == 0:
+        return depth_sim * 0.4
+
+    total_weight = 0.0
+    weighted_sum = 0.0
+    for i in range(min_depth):
+        weight = i + 1  # increasing weight towards the bone itself
+        sim = name_score(path_a[i], path_b[i])
+        weighted_sum += sim * weight
+        total_weight += weight
+
+    path_name_sim = weighted_sum / total_weight if total_weight > 0 else 0.0
+    return path_name_sim * 0.6 + depth_sim * 0.4
+
+
+def _get_bone_head_local(bone) -> tuple:
+    """Get bone head position in armature-local space."""
+    # bone.head_local is available in edit mode; for pose bones use bone.bone.head_local
+    if hasattr(bone, "bone"):
+        return tuple(bone.bone.head_local)
+    return tuple(bone.head_local)
+
+
+def _compute_bbox(armature_obj) -> tuple:
+    """Compute bounding box of all bones in local space. Returns (min_coord, max_coord, size)."""
+    coords = []
+    for b in armature_obj.data.bones:
+        coords.append(tuple(b.head_local))
+    if not coords:
+        return (0, 0, 0), (1, 1, 1), 1.0
+    mins = [min(c[i] for c in coords) for i in range(3)]
+    maxs = [max(c[i] for c in coords) for i in range(3)]
+    size = max(maxs[i] - mins[i] for i in range(3))
+    if size < 1e-6:
+        size = 1.0
+    return tuple(mins), tuple(maxs), size
+
+
+def spatial_score(bone_a, bone_b, bbox_a, bbox_b) -> float:
+    """Compute spatial position similarity -> [0, 1]."""
+    pos_a = _get_bone_head_local(bone_a)
+    pos_b = _get_bone_head_local(bone_b)
+
+    # Normalize to [0,1] within each armature's bounding box
+    norm_a = tuple((pos_a[i] - bbox_a[0][i]) / bbox_a[2] for i in range(3))
+    norm_b = tuple((pos_b[i] - bbox_b[0][i]) / bbox_b[2] for i in range(3))
+
+    # Euclidean distance in normalized space
+    dist = math.sqrt(sum((norm_a[i] - norm_b[i]) ** 2 for i in range(3)))
+    base_sim = max(0.0, 1.0 - dist * 2.0)
+
+    # Left/right mirror tolerance: if X is mirrored but Y/Z are close, give partial credit
+    mirror_dist = math.sqrt(
+        (norm_a[0] - (1.0 - norm_b[0])) ** 2
+        + (norm_a[1] - norm_b[1]) ** 2
+        + (norm_a[2] - norm_b[2]) ** 2
+    )
+    mirror_sim = max(0.0, 1.0 - mirror_dist * 2.0)
+    # Take the better of direct and mirror match, but mirror gets 60% credit
+    return max(base_sim, mirror_sim * 0.6)
+
+
+# ===========================================================================
+# Preset Learning - Load historical mappings from saved presets
+# ===========================================================================
+
+_preset_cache = None  # cache: dict of {(vg_name, bone_name): count}
+
+
+def _get_preset_dir() -> str:
+    """Return the preset directory path (dynamic, not hardcoded)."""
+    return os.path.join(
+        bpy.utils.resource_path("USER"), "scripts", "presets", "yuinomodtools"
+    )
+
+
+def load_preset_mappings() -> dict:
+    """
+    Scan all .py preset files and extract (vg, bone) pair frequency.
+
+    Returns:
+        dict: {(vg_name_lower, bone_name_lower): occurrence_count}
+    """
+    global _preset_cache
+    if _preset_cache is not None:
+        return _preset_cache
+
+    preset_dir = _get_preset_dir()
+    pair_counts = {}
+
+    if not os.path.isdir(preset_dir):
+        print(f"[AutoMap] preset dir not found: {preset_dir}")
+        _preset_cache = pair_counts
+        return pair_counts
+
+    # Regex to extract vg and bone assignments from preset scripts
+    # Matches patterns like:  item_sub_1.vg = 'SomeName'  and  item_sub_1.bone = 'OtherName'
+    vg_pattern = re.compile(r"\.vg\s*=\s*['\"]([^'\"]+)['\"]")
+    bone_pattern = re.compile(r"\.bone\s*=\s*['\"]([^'\"]+)['\"]")
+
+    file_count = 0
+    for fname in os.listdir(preset_dir):
+        if not fname.endswith(".py"):
+            continue
+        filepath = os.path.join(preset_dir, fname)
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                content = f.read()
+        except Exception:
+            continue
+
+        vg_matches = vg_pattern.findall(content)
+        bone_matches = bone_pattern.findall(content)
+
+        # Pair them up (they appear in order: vg then bone for each item)
+        for vg_name, bone_name in zip(vg_matches, bone_matches):
+            key = (vg_name.lower(), bone_name.lower())
+            pair_counts[key] = pair_counts.get(key, 0) + 1
+
+        file_count += 1
+
+    total_pairs = sum(pair_counts.values())
+    print(f"[AutoMap] loaded {file_count} presets, {len(pair_counts)} unique pairs, {total_pairs} total mappings")
+    _preset_cache = pair_counts
+    return pair_counts
+
+
+def _invalidate_preset_cache():
+    """Call this when presets might have changed (e.g. after saving a preset)."""
+    global _preset_cache
+    _preset_cache = None
+
+
+def preset_bonus(src_name: str, tgt_name: str, preset_data: dict, max_count: int) -> float:
+    """
+    Return a bonus score [0, 1] based on historical preset data.
+
+    If the exact (src, tgt) pair was seen in presets, give high bonus.
+    Also check if either name appears as vg or bone in known pairs for partial bonus.
+    """
+    if not preset_data or max_count == 0:
+        return 0.0
+
+    key = (src_name.lower(), tgt_name.lower())
+    count = preset_data.get(key, 0)
+    if count > 0:
+        # Direct match: scale by frequency (more presets = more confidence)
+        # Normalize to [0.6, 1.0] range - even rare matches get strong boost
+        freq_score = min(count / max_count, 1.0)
+        return 0.6 + freq_score * 0.4
+
+    # Partial match: check if src_name appears as vg in any known pair
+    # or tgt_name appears as bone in any known pair
+    src_lower = src_name.lower()
+    tgt_lower = tgt_name.lower()
+    src_as_vg = sum(v for (vg, _), v in preset_data.items() if vg == src_lower)
+    tgt_as_bone = sum(v for (_, b), v in preset_data.items() if b == tgt_lower)
+
+    # If src is known as a vg in some mapping AND tgt is known as a bone in some mapping,
+    # give a moderate indirect bonus
+    if src_as_vg > 0 and tgt_as_bone > 0:
+        return 0.25
+    if src_as_vg > 0 or tgt_as_bone > 0:
+        return 0.10
+
+    return 0.0
+
+
+def auto_match_bones(src_armature_obj, tgt_armature_obj, threshold=0.25):
+    """
+    Automatically match core bones between two armatures.
+
+    Returns:
+        (matched_pairs, unmatched_src, unmatched_tgt)
+        matched_pairs: list of (src_bone_name, tgt_bone_name, score)
+        unmatched_src: list of src bone names with no match
+        unmatched_tgt: list of tgt bone names with no match
+    """
+    src_bones = [b for b in src_armature_obj.data.bones if is_core_bone(b.name)]
+    tgt_bones = [b for b in tgt_armature_obj.data.bones if is_core_bone(b.name)]
+
+    bbox_src = _compute_bbox(src_armature_obj)
+    bbox_tgt = _compute_bbox(tgt_armature_obj)
+
+    # Load preset knowledge
+    preset_data = load_preset_mappings()
+    max_preset_count = max(preset_data.values()) if preset_data else 0
+
+    print(f"[AutoMap] source core bones: {len(src_bones)}, target core bones: {len(tgt_bones)}")
+
+    # Build score matrix with preset bonus
+    scores = []
+    for sb in src_bones:
+        for tb in tgt_bones:
+            ns = name_score(sb.name, tb.name)
+            hs = hierarchy_score(sb, tb)
+            ss = spatial_score(sb, tb, bbox_src, bbox_tgt)
+            pb = preset_bonus(sb.name, tb.name, preset_data, max_preset_count)
+            # Hybrid score: preset knowledge has highest weight
+            # Pairs seen in multiple presets get strongest boost
+            total = 0.30 * ns + 0.15 * hs + 0.10 * ss + 0.45 * pb
+            scores.append((total, sb.name, tb.name))
+
+    # Sort by score descending
+    scores.sort(key=lambda x: x[0], reverse=True)
+
+    # Greedy matching
+    matched_src = set()
+    matched_tgt = set()
+    matched_pairs = []
+
+    for score, src_name, tgt_name in scores:
+        if score < threshold:
+            break
+        if src_name in matched_src or tgt_name in matched_tgt:
+            continue
+        matched_pairs.append((src_name, tgt_name, score))
+        matched_src.add(src_name)
+        matched_tgt.add(tgt_name)
+        print(f"  [Match] {src_name} -> {tgt_name}  score={score:.3f}")
+
+    unmatched_src = [b.name for b in src_bones if b.name not in matched_src]
+    unmatched_tgt = [b.name for b in tgt_bones if b.name not in matched_tgt]
+
+    if unmatched_src:
+        print(f"  [Unmatched source] {unmatched_src}")
+    if unmatched_tgt:
+        print(f"  [Unmatched target] {unmatched_tgt}")
+
+    return matched_pairs, unmatched_src, unmatched_tgt
 
 
 class ListItem(PropertyGroup):
@@ -193,6 +584,182 @@ class LIST_OT_NewItem(Operator):
     def execute(self, context):
         context.scene.my_list.add()
 
+        return {"FINISHED"}
+
+
+class LIST_OT_AddFromBones(Operator):
+    bl_idname = "my_list.add_from_bones"
+    bl_label = LANG[bl_idname]
+    bl_description = LANG[bl_idname + ".tip"]
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        return obj and obj.type == "ARMATURE" and obj.mode == "POSE"
+
+    def execute(self, context):
+        selected = context.selected_pose_bones
+        active = context.active_pose_bone
+
+        if not selected or len(selected) < 2:
+            Kit.report(LANG["report.need_2_bones"])
+            return {"FINISHED"}
+
+        if active is None:
+            Kit.report(LANG["report.no_active_bone_pose"])
+            return {"FINISHED"}
+
+        target_name = active.name
+        source_bones = [b for b in selected if b.name != target_name]
+
+        if not source_bones:
+            Kit.report(LANG["report.need_2_bones"])
+            return {"FINISHED"}
+
+        my_list = context.scene.my_list
+        for src_bone in source_bones:
+            item = my_list.add()
+            item.vg = src_bone.name
+            item.bone = target_name
+            print(f"{item.vg} -> {item.bone} added (from bones)")
+
+        self.report({"INFO"}, f"added {len(source_bones)} mapping(s)")
+        return {"FINISHED"}
+
+
+class LIST_OT_ReverseMappings(Operator):
+    bl_idname = "my_list.reverse_mappings"
+    bl_label = LANG[bl_idname]
+    bl_description = LANG[bl_idname + ".tip"]
+
+    @classmethod
+    def poll(cls, context):
+        return len(context.scene.my_list) > 0
+
+    def execute(self, context):
+        my_list = context.scene.my_list
+        for item in my_list:
+            item.vg, item.bone = item.bone, item.vg
+        self.report({"INFO"}, LANG["report.reverse_done"])
+        return {"FINISHED"}
+
+
+class LIST_OT_SortByName(Operator):
+    bl_idname = "my_list.sort_by_name"
+    bl_label = LANG[bl_idname]
+    bl_description = LANG[bl_idname + ".tip"]
+
+    @classmethod
+    def poll(cls, context):
+        return len(context.scene.my_list) > 1
+
+    def execute(self, context):
+        my_list = context.scene.my_list
+        # Collect all items into a list of dicts
+        items = [{"vg": item.vg, "bone": item.bone} for item in my_list]
+        # Sort alphabetically by vg (source name)
+        items.sort(key=lambda x: x["vg"].lower())
+        # Write back
+        for i, item in enumerate(my_list):
+            item.vg = items[i]["vg"]
+            item.bone = items[i]["bone"]
+        self.report({"INFO"}, "sorted by name")
+        return {"FINISHED"}
+
+
+class LIST_OT_SortByHierarchy(Operator):
+    bl_idname = "my_list.sort_by_hierarchy"
+    bl_label = LANG[bl_idname]
+    bl_description = LANG[bl_idname + ".tip"]
+
+    @classmethod
+    def poll(cls, context):
+        return (len(context.scene.my_list) > 1
+                and context.scene.armature_pointer is not None)
+
+    def execute(self, context):
+        my_list = context.scene.my_list
+        armature_obj = context.scene.armature_pointer
+        arm_data = armature_obj.data
+
+        # Build depth lookup: bone_name -> hierarchy depth
+        def get_depth(bone_name):
+            bone = arm_data.bones.get(bone_name)
+            if bone is None:
+                return 999
+            depth = 0
+            b = bone
+            while b.parent is not None:
+                depth += 1
+                b = b.parent
+            return depth
+
+        # Collect items with depth info
+        items = []
+        for item in my_list:
+            depth = get_depth(item.bone)
+            items.append({"vg": item.vg, "bone": item.bone, "depth": depth})
+
+        # Sort by depth first (root bones first), then by name within same depth
+        items.sort(key=lambda x: (x["depth"], x["bone"].lower()))
+
+        # Write back
+        for i, item in enumerate(my_list):
+            item.vg = items[i]["vg"]
+            item.bone = items[i]["bone"]
+        self.report({"INFO"}, "sorted by hierarchy")
+        return {"FINISHED"}
+
+
+class AutoMapBones(Operator):
+    bl_idname = "my_list.auto_map"
+    bl_label = LANG[bl_idname]
+    bl_description = LANG[bl_idname + ".tip"]
+
+    def execute(self, context):
+        scene = context.scene
+        src_obj = scene.auto_src_armature
+        tgt_obj = scene.auto_tgt_armature
+
+        # Refresh preset cache each time for latest data
+        _invalidate_preset_cache()
+
+        # Validate inputs
+        if src_obj is None or tgt_obj is None:
+            Kit.report(LANG["report.need_2_armatures"])
+            return {"FINISHED"}
+        if src_obj == tgt_obj:
+            Kit.report(LANG["report.need_2_armatures"])
+            return {"FINISHED"}
+
+        # Resolve actual objects from bpy.data
+        src_arm = bpy.data.objects.get(src_obj.name)
+        tgt_arm = bpy.data.objects.get(tgt_obj.name)
+        if src_arm is None or tgt_arm is None:
+            Kit.report(LANG["report.need_2_armatures"])
+            return {"FINISHED"}
+
+        matched, unmatched_src, unmatched_tgt = auto_match_bones(src_arm, tgt_arm)
+
+        if not matched:
+            Kit.report(LANG["report.no_match"])
+            return {"FINISHED"}
+
+        # Append results to my_list (do not clear existing entries)
+        my_list = scene.my_list
+        for src_name, tgt_name, score in matched:
+            item = my_list.add()
+            item.vg = src_name
+            item.bone = tgt_name
+
+        msg = (
+            f"{LANG['report.auto_map_done']}: "
+            f"{len(matched)} matched, "
+            f"{len(unmatched_src)} unmatched source, "
+            f"{len(unmatched_tgt)} unmatched target"
+        )
+        self.report({"INFO"}, msg)
+        print(f"[AutoMap] {msg}")
         return {"FINISHED"}
 
 
@@ -486,8 +1053,33 @@ class MyAddonPanel(Panel):
                 LIST_OT_DeleteItem.bl_idname, text=LIST_OT_DeleteItem.bl_label
             )
 
+            row2 = box1.row(align=True)
+            row2.operator(
+                LIST_OT_AddFromBones.bl_idname, text=LIST_OT_AddFromBones.bl_label
+            )
+            row2.operator(
+                LIST_OT_ReverseMappings.bl_idname,
+                text=LIST_OT_ReverseMappings.bl_label,
+            )
+
+            row_sort = box1.row(align=True)
+            row_sort.operator(
+                LIST_OT_SortByName.bl_idname, text=LIST_OT_SortByName.bl_label, icon="SORTALPHA"
+            )
+            row_sort.operator(
+                LIST_OT_SortByHierarchy.bl_idname,
+                text=LIST_OT_SortByHierarchy.bl_label, icon="OUTLINER",
+            )
+
             box1.operator(Done.bl_idname, text=Done.bl_label)
             box1.prop(scene, "is_merging")
+
+            # 自动骨骼映射
+            box_auto = layout.box()
+            box_auto.label(text=LANG["auto_map.label"], icon="BONE_DATA")
+            box_auto.prop(scene, "auto_src_armature", text=LANG["auto_map.src"], icon="ARMATURE_DATA")
+            box_auto.prop(scene, "auto_tgt_armature", text=LANG["auto_map.tgt"], icon="ARMATURE_DATA")
+            box_auto.operator(AutoMapBones.bl_idname, text=AutoMapBones.bl_label, icon="FILE_REFRESH")
 
             box2 = layout.box()
             row = box2.row()
@@ -867,6 +1459,11 @@ classes = (
     Stop,
     Skip,
     ExportToCSVData,
+    LIST_OT_AddFromBones,
+    LIST_OT_ReverseMappings,
+    LIST_OT_SortByName,
+    LIST_OT_SortByHierarchy,
+    AutoMapBones,
 )
 
 
@@ -905,6 +1502,8 @@ def register():
         default=1,
         min=0,
     )
+    Scene.auto_src_armature = PointerProperty(type=Object, poll=Kit.is_armature)
+    Scene.auto_tgt_armature = PointerProperty(type=Object, poll=Kit.is_armature)
 
 
 def unregister():
@@ -921,3 +1520,5 @@ def unregister():
     del Scene.is_mid_start
     del Scene.export_key_col
     del Scene.export_val_col
+    del Scene.auto_src_armature
+    del Scene.auto_tgt_armature
