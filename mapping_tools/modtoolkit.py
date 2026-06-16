@@ -6,6 +6,7 @@ from bpy.props import (
     PointerProperty,
     CollectionProperty,
     BoolProperty,
+    EnumProperty,
 )
 from bpy.types import (
     PropertyGroup,
@@ -271,6 +272,35 @@ def _strip_side(name: str) -> str:
     return lower
 
 
+_SIDE_TOKENS = {
+    "L": {"left", "l", "lt"},
+    "R": {"right", "r", "rt"},
+}
+
+
+def _detect_side(name: str):
+    """Detect L/R side from a bone name. Returns 'L', 'R', or None."""
+    lower = name.lower()
+    for prefix, side in [
+        ("left_", "L"), ("right_", "R"), ("l_", "L"), ("r_", "R"),
+        ("lt_", "L"), ("rt_", "R"),
+    ]:
+        if lower.startswith(prefix):
+            return side
+    for suffix, side in [
+        ("_left", "L"), ("_right", "R"), ("_l", "L"), ("_r", "R"),
+        (".left", "L"), (".right", "R"), (".l", "L"), (".r", "R"),
+    ]:
+        if lower.endswith(suffix):
+            return side
+    tokens = _tokenize(name)
+    if tokens and tokens[-1] in _SIDE_TOKENS["L"]:
+        return "L"
+    if tokens and tokens[-1] in _SIDE_TOKENS["R"]:
+        return "R"
+    return None
+
+
 def _tokenize(name: str) -> list:
     """Split bone name into tokens: camelCase, digits, and common separators (_ . , -)."""
     name = re.sub(r'([A-Z])', r'_\1', name)
@@ -510,6 +540,68 @@ def preset_bonus(src_name: str, tgt_name: str, preset_data: dict,
     return 0.0        # only one side known, no bonus (avoid noise)
 
 
+# ===========================================================================
+# Canonical matching helpers (top-level, reusable from both modes)
+# ===========================================================================
+
+def _cached_hierarchy_score_paths(path_a, path_b) -> float:
+    """Compute hierarchy score from pre-computed bone paths."""
+    depth_a, depth_b = len(path_a), len(path_b)
+    depth_sim = 1.0 - min(abs(depth_a - depth_b) * 0.2, 1.0)
+    min_depth = min(depth_a, depth_b)
+    if min_depth == 0:
+        return depth_sim * 0.4
+    total_weight = 0.0
+    weighted_sum = 0.0
+    for i in range(min_depth):
+        weight = i + 1
+        sim = name_score(path_a[i], path_b[i])
+        weighted_sum += sim * weight
+        total_weight += weight
+    path_name_sim = weighted_sum / total_weight if total_weight > 0 else 0.0
+    return path_name_sim * 0.6 + depth_sim * 0.4
+
+
+def _cached_spatial_score_positions(pos_a, pos_b, bbox_a, bbox_b) -> float:
+    """Compute spatial score from pre-computed positions and bounding boxes."""
+    norm_a = tuple((pos_a[i] - bbox_a[0][i]) / bbox_a[2] for i in range(3))
+    norm_b = tuple((pos_b[i] - bbox_b[0][i]) / bbox_b[2] for i in range(3))
+    dist = math.sqrt(sum((norm_a[i] - norm_b[i]) ** 2 for i in range(3)))
+    base_sim = max(0.0, 1.0 - dist * 2.0)
+    mirror_dist = math.sqrt(
+        (norm_a[0] - (1.0 - norm_b[0])) ** 2
+        + (norm_a[1] - norm_b[1]) ** 2
+        + (norm_a[2] - norm_b[2]) ** 2
+    )
+    mirror_sim = max(0.0, 1.0 - mirror_dist * 2.0)
+    return max(base_sim, mirror_sim * 0.6)
+
+
+def _canonical_match_score(sb, tb, src_entry, tgt_entry, db, src_paths, tgt_paths, bbox_src, bbox_tgt):
+    """Score a pair that resolves to the same canonical entry."""
+    best_alias_score = 0.0
+    for alias in src_entry.aliases:
+        best_alias_score = max(best_alias_score, name_score(sb.name, alias))
+    for alias in tgt_entry.aliases:
+        best_alias_score = max(best_alias_score, name_score(tb.name, alias))
+
+    src_side = _detect_side(sb.name)
+    tgt_side = _detect_side(tb.name)
+    if src_side is None or tgt_side is None:
+        side_score = 0.8
+    elif src_side == tgt_side:
+        side_score = 1.0
+    else:
+        side_score = 0.5
+
+    hs = _cached_hierarchy_score_paths(src_paths[sb.name], tgt_paths[tb.name])
+    ss = _cached_spatial_score_positions(
+        _get_bone_head_local(sb), _get_bone_head_local(tb), bbox_src, bbox_tgt
+    )
+
+    return 0.40 * best_alias_score + 0.25 * side_score + 0.20 * hs + 0.15 * ss
+
+
 def auto_match_bones(src_armature_obj, tgt_armature_obj, threshold=0.25):
     """
     Automatically match core bones between two armatures.
@@ -541,50 +633,49 @@ def auto_match_bones(src_armature_obj, tgt_armature_obj, threshold=0.25):
     # --- Cached internal scoring helpers (use pre-computed data) ---
 
     def _cached_hierarchy_score(sb, tb):
-        path_a = src_paths[sb.name]
-        path_b = tgt_paths[tb.name]
-        depth_a, depth_b = len(path_a), len(path_b)
-        depth_sim = 1.0 - min(abs(depth_a - depth_b) * 0.2, 1.0)
-        min_depth = min(depth_a, depth_b)
-        if min_depth == 0:
-            return depth_sim * 0.4
-        total_weight = 0.0
-        weighted_sum = 0.0
-        for i in range(min_depth):
-            weight = i + 1
-            sim = name_score(path_a[i], path_b[i])
-            weighted_sum += sim * weight
-            total_weight += weight
-        path_name_sim = weighted_sum / total_weight if total_weight > 0 else 0.0
-        return path_name_sim * 0.6 + depth_sim * 0.4
+        return _cached_hierarchy_score_paths(src_paths[sb.name], tgt_paths[tb.name])
 
     def _cached_spatial_score(sb, tb):
-        pos_a = src_positions[sb.name]
-        pos_b = tgt_positions[tb.name]
-        norm_a = tuple((pos_a[i] - bbox_src[0][i]) / bbox_src[2] for i in range(3))
-        norm_b = tuple((pos_b[i] - bbox_tgt[0][i]) / bbox_tgt[2] for i in range(3))
-        dist = math.sqrt(sum((norm_a[i] - norm_b[i]) ** 2 for i in range(3)))
-        base_sim = max(0.0, 1.0 - dist * 2.0)
-        mirror_dist = math.sqrt(
-            (norm_a[0] - (1.0 - norm_b[0])) ** 2
-            + (norm_a[1] - norm_b[1]) ** 2
-            + (norm_a[2] - norm_b[2]) ** 2
+        return _cached_spatial_score_positions(
+            src_positions[sb.name], tgt_positions[tb.name], bbox_src, bbox_tgt
         )
-        mirror_sim = max(0.0, 1.0 - mirror_dist * 2.0)
-        return max(base_sim, mirror_sim * 0.6)
 
-    # Build score matrix with preset bonus
+    # Build score matrix - branch by algorithm mode
+    algorithm = getattr(bpy.context.scene, 'xbone_automap_mode', 'SIMILARITY')
     scores = []
-    for sb in src_bones:
-        for tb in tgt_bones:
-            ns = name_score(sb.name, tb.name)
-            hs = _cached_hierarchy_score(sb, tb)
-            ss = _cached_spatial_score(sb, tb)
-            pb = preset_bonus(sb.name, tb.name, preset_data, vg_index, bone_index, max_preset_count)
-            # Hybrid score: preset knowledge has highest weight
-            # Pairs seen in multiple presets get strongest boost
-            total = 0.30 * ns + 0.15 * hs + 0.10 * ss + 0.45 * pb
-            scores.append((total, sb.name, tb.name))
+    matched_tgt = set()
+
+    if algorithm == 'CANON':
+        from .bone_database import BoneDatabase
+        db = BoneDatabase.load()
+        CANON_THRESHOLD = 0.60
+
+        for sb in src_bones:
+            src_entry = db.resolve(sb.name, threshold=0.5)
+            if src_entry is None:
+                continue
+            for tb in tgt_bones:
+                if tb.name in matched_tgt:
+                    continue
+                tgt_entry = db.resolve(tb.name, threshold=0.5)
+                if tgt_entry is None or tgt_entry.id != src_entry.id:
+                    continue
+                score = _canonical_match_score(
+                    sb, tb, src_entry, tgt_entry, db,
+                    src_paths, tgt_paths, bbox_src, bbox_tgt
+                )
+                if score >= CANON_THRESHOLD:
+                    scores.append((score, sb.name, tb.name))
+    else:
+        # Existing similarity branch
+        for sb in src_bones:
+            for tb in tgt_bones:
+                ns = name_score(sb.name, tb.name)
+                hs = _cached_hierarchy_score(sb, tb)
+                ss = _cached_spatial_score(sb, tb)
+                pb = preset_bonus(sb.name, tb.name, preset_data, vg_index, bone_index, max_preset_count)
+                total = 0.30 * ns + 0.15 * hs + 0.10 * ss + 0.45 * pb
+                scores.append((total, sb.name, tb.name))
 
     # Sort by score descending
     scores.sort(key=lambda x: x[0], reverse=True)
@@ -615,12 +706,33 @@ def auto_match_bones(src_armature_obj, tgt_armature_obj, threshold=0.25):
     return matched_pairs, unmatched_src, unmatched_tgt
 
 
+def _on_list_bone_updated(self, context):
+    """Called when user manually changes the bone field of a mapping item."""
+    if not self.vg or not self.bone:
+        return
+    if getattr(context.scene, "xbone_automap_mode", 'SIMILARITY') != 'CANON':
+        return
+
+    from .bone_database import BoneDatabase
+    db = BoneDatabase.load()
+    entry = db.resolve(self.vg, threshold=0.5)
+    if entry is None:
+        return
+
+    conflict = db.find_entry_by_alias(self.bone)
+    if conflict is not None and conflict.id != entry.id:
+        db.add_alias(entry.id, self.bone, source="correction", conflict_with=conflict.id)
+    else:
+        db.add_alias(entry.id, self.bone, source="correction")
+    db.save_user()
+
+
 class ListItem(PropertyGroup):
     vg_tip = LANG["ul_list.vg.tip"]
     bone_tip = LANG["ul_list.bone.tip"]
 
     vg: StringProperty(name="vg", description=vg_tip, default="")
-    bone: StringProperty(name="bone", description=bone_tip, default="")
+    bone: StringProperty(name="bone", description=bone_tip, default="", update=_on_list_bone_updated)
 
 
 class MY_UL_List(UIList):
@@ -1146,9 +1258,21 @@ class MyAddonPanel(Panel):
             # 自动骨骼映射
             box_auto = layout.box()
             box_auto.label(text=LANG["auto_map.label"], icon="BONE_DATA")
+            box_auto.prop(scene, "xbone_automap_mode", text="算法")
             box_auto.prop(scene, "auto_src_armature", text=LANG["auto_map.src"], icon="ARMATURE_DATA")
             box_auto.prop(scene, "auto_tgt_armature", text=LANG["auto_map.tgt"], icon="ARMATURE_DATA")
             box_auto.operator(AutoMapBones.bl_idname, text=AutoMapBones.bl_label, icon="FILE_REFRESH")
+
+            # 骨骼数据库管理
+            box_db = layout.box()
+            box_db.label(text="骨骼数据库", icon="FILE_BLEND")
+            row_db = box_db.row(align=True)
+            row_db.operator("xqfa.seed_canon_from_presets")
+            row_db.operator("my_list.learn_from_list")
+            row_db2 = box_db.row(align=True)
+            row_db2.operator("xqfa.export_canon_database")
+            row_db2.operator("xqfa.import_canon_database")
+            box_db.operator("xqfa.reset_canon_database")
 
             box2 = layout.box()
             row = box2.row()
@@ -1507,6 +1631,110 @@ class ExportToCSVData(Operator):
         return {'FINISHED'}
 
 
+# ===========================================================================
+# Canonical Bone Database Operators
+# ===========================================================================
+
+class LIST_OT_LearnFromList(Operator):
+    bl_idname = "my_list.learn_from_list"
+    bl_label = "从当前列表学习"
+    bl_description = "将当前映射列表中的手动修正吸收到数据库"
+
+    def execute(self, context):
+        from .bone_database import BoneDatabase
+        db = BoneDatabase.load()
+        scene = context.scene
+        learned = 0
+        for item in scene.my_list:
+            if not item.vg or not item.bone:
+                continue
+            entry = db.resolve(item.vg, threshold=0.5)
+            if entry is None:
+                continue
+            if not db.has_alias(entry.id, item.bone):
+                conflict = db.find_entry_by_alias(item.bone)
+                kwargs = {"conflict_with": conflict.id} if conflict and conflict.id != entry.id else {}
+                db.add_alias(entry.id, item.bone, source="correction", **kwargs)
+                learned += 1
+        if learned > 0:
+            db.save_user()
+        self.report({'INFO'}, f"已学习 {learned} 个别名")
+        return {'FINISHED'}
+
+
+class CANON_OT_ExportDatabase(Operator):
+    bl_idname = "xqfa.export_canon_database"
+    bl_label = "导出用户数据库"
+    filepath: bpy.props.StringProperty(subtype='FILE_PATH')
+    filename_ext = ".json"
+    filter_glob: bpy.props.StringProperty(default="*.json", options={'HIDDEN'})
+
+    def execute(self, context):
+        from .bone_database import BoneDatabase
+        db = BoneDatabase.load()
+        db.export_user(self.filepath)
+        self.report({'INFO'}, f"已导出: {self.filepath}")
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        self.filepath = "bone_canon_user.json"
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
+
+class CANON_OT_ImportDatabase(Operator):
+    bl_idname = "xqfa.import_canon_database"
+    bl_label = "导入用户数据库"
+    filepath: bpy.props.StringProperty(subtype='FILE_PATH')
+    filename_ext = ".json"
+    filter_glob: bpy.props.StringProperty(default="*.json", options={'HIDDEN'})
+
+    def execute(self, context):
+        from .bone_database import BoneDatabase
+        db = BoneDatabase.load()
+        db.import_user(self.filepath)
+        self.report({'INFO'}, f"已导入: {self.filepath}")
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
+
+class CANON_OT_ResetDatabase(Operator):
+    bl_idname = "xqfa.reset_canon_database"
+    bl_label = "重置用户数据库"
+    bl_description = "清空所有用户修正，恢复默认模板"
+
+    def execute(self, context):
+        from .bone_database import BoneDatabase
+        db = BoneDatabase.load()
+        db.reset_user()
+        self.report({'INFO'}, "用户数据库已重置")
+        return {'FINISHED'}
+
+
+class CANON_OT_SeedFromPresets(Operator):
+    bl_idname = "xqfa.seed_canon_from_presets"
+    bl_label = "从预设生成别名"
+    bl_description = "扫描现有预设，将未识别的骨骼名补充到用户层数据库"
+
+    def execute(self, context):
+        from .bone_database import BoneDatabase
+        db = BoneDatabase.load()
+        preset_data, _, _ = load_preset_mappings()
+        added = 0
+        for (vg, bone), count in preset_data.items():
+            entry = db.resolve(vg, threshold=0.5)
+            if entry is not None and not db.has_alias(entry.id, bone):
+                db.add_alias(entry.id, bone, source="preset", confidence=min(count / 5.0, 1.0))
+                added += 1
+        if added > 0:
+            db.save_user()
+        self.report({'INFO'}, f"从预设补充了 {added} 个别名")
+        return {'FINISHED'}
+
+
 classes = (
     MyAddonPanel,
     StartAssign,
@@ -1533,6 +1761,11 @@ classes = (
     LIST_OT_SortByName,
     LIST_OT_SortByHierarchy,
     AutoMapBones,
+    LIST_OT_LearnFromList,
+    CANON_OT_ExportDatabase,
+    CANON_OT_ImportDatabase,
+    CANON_OT_ResetDatabase,
+    CANON_OT_SeedFromPresets,
 )
 
 
@@ -1573,6 +1806,15 @@ def register():
     )
     Scene.auto_src_armature = PointerProperty(type=Object, poll=Kit.is_armature)
     Scene.auto_tgt_armature = PointerProperty(type=Object, poll=Kit.is_armature)
+    Scene.xbone_automap_mode = EnumProperty(
+        name="自动映射算法",
+        description="选择自动骨骼匹配算法",
+        items=[
+            ('SIMILARITY', "智能相似度", "基于名称、层级、空间和预设历史的综合评分"),
+            ('CANON', "数据库匹配", "基于标准骨骼数据库的功能分类匹配"),
+        ],
+        default='SIMILARITY'
+    )
 
 
 def unregister():
@@ -1591,3 +1833,5 @@ def unregister():
     del Scene.export_val_col
     del Scene.auto_src_armature
     del Scene.auto_tgt_armature
+    if hasattr(Scene, 'xbone_automap_mode'):
+        del Scene.xbone_automap_mode
