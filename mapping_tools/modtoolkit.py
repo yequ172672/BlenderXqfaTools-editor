@@ -215,8 +215,17 @@ _BLACKLIST_KEYWORDS = [
     "ik_", "fk_", "pole", "twist", "roll", "stretch", "ik",
     # Auxiliary
     "helper", "dummy", "adj", "shadow", "driver", "mch", "def_", "copy", "tweak",
-    # Decorative
-    "weapon", "slot", "attach", "prop",
+    # Decorative / Equipment / Weapon
+    "weapon", "slot", "attach", "prop", "robe", "ribbon", "collar",
+    "frill", "suspender", "lamp", "sleeve", "armcloth", "upperfrill",
+    "fulminis", "flam", "pilebunker", "sniper", "shotgun", "grapple",
+    "wire", "aegis", "mecanic", "slave",
+    # Non-existent / Exclusion markers
+    "nonex",
+    # Specific decorative prefixes
+    "bn_robe", "bn_ribbon", "bn_collar", "bn_frill", "bn_suspender",
+    "bn_lamp", "bn_sleeve", "bn_wire", "bn_edge",
+    "po_", "dm_", "pt_",
 ]
 
 _WHITELIST_KEYWORDS = [
