@@ -246,25 +246,35 @@ def is_core_bone(bone_name: str) -> bool:
     return True
 
 
-# -- Side-prefix stripping for name comparison --
+# -- Side-prefix/suffix stripping for name comparison --
 _SIDE_PREFIXES = [
     "left_", "right_", "l_", "r_",
     "left", "right",
     "lt_", "rt_", "lt", "rt",
 ]
 
+_SIDE_SUFFIXES = [
+    "_left", "_right", ".left", ".right",
+    "_l", "_r", ".l", ".r",
+]
+
 
 def _strip_side(name: str) -> str:
-    """Remove common left/right side prefix from a bone name token."""
+    """Remove leading/trailing side markers. Matches longest first to avoid short-match errors."""
     lower = name.lower()
-    for prefix in _SIDE_PREFIXES:
+    for prefix in sorted(_SIDE_PREFIXES, key=len, reverse=True):
         if lower.startswith(prefix):
             return lower[len(prefix):]
+    for suffix in sorted(_SIDE_SUFFIXES, key=len, reverse=True):
+        if lower.endswith(suffix):
+            return lower[:-len(suffix)]
     return lower
 
 
 def _tokenize(name: str) -> list:
-    """Split bone name into lowercase tokens by common separators."""
+    """Split bone name into tokens: camelCase, digits, and common separators (_ . , -)."""
+    name = re.sub(r'([A-Z])', r'_\1', name)
+    name = re.sub(r'(\d+)', r'_\1', name)
     return [t for t in re.split(r"[_. \-]", name.lower()) if t]
 
 
@@ -279,9 +289,15 @@ def name_score(name_a: str, name_b: str) -> float:
     union = tokens_a | tokens_b
     jaccard = len(intersection) / len(union) if union else 0.0
 
-    # Side-stripped bonus: compare tokens after removing side prefix
-    stripped_a = set(_strip_side(t) for t in tokens_a)
-    stripped_b = set(_strip_side(t) for t in tokens_b)
+    # Side-stripped bonus: strip side at whole-name level first, then per token
+    stripped_a = {
+        s for t in _tokenize(_strip_side(name_a))
+        for s in (_strip_side(t),) if s
+    }
+    stripped_b = {
+        s for t in _tokenize(_strip_side(name_b))
+        for s in (_strip_side(t),) if s
+    }
     if stripped_a and stripped_b:
         s_inter = stripped_a & stripped_b
         s_union = stripped_a | stripped_b
@@ -380,7 +396,9 @@ def spatial_score(bone_a, bone_b, bbox_a, bbox_b) -> float:
 # Preset Learning - Load historical mappings from saved presets
 # ===========================================================================
 
-_preset_cache = None  # cache: dict of {(vg_name, bone_name): count}
+_preset_cache = None       # cache: dict of {(vg_name, bone_name): count}
+_preset_vg_index = None   # cache: {vg_name_lower: total_count}
+_preset_bone_index = None # cache: {bone_name_lower: total_count}
 
 
 def _get_preset_dir() -> str:
@@ -390,29 +408,40 @@ def _get_preset_dir() -> str:
     )
 
 
-def load_preset_mappings() -> dict:
+def load_preset_mappings() -> tuple:
     """
     Scan all .py preset files and extract (vg, bone) pair frequency.
 
     Returns:
-        dict: {(vg_name_lower, bone_name_lower): occurrence_count}
+        tuple: (pair_counts, vg_index, bone_index)
+            pair_counts: {(vg_name_lower, bone_name_lower): occurrence_count}
+            vg_index:    {vg_name_lower: total_occurrence_count}
+            bone_index:  {bone_name_lower: total_occurrence_count}
     """
-    global _preset_cache
+    global _preset_cache, _preset_vg_index, _preset_bone_index
     if _preset_cache is not None:
-        return _preset_cache
+        return _preset_cache, _preset_vg_index, _preset_bone_index
 
     preset_dir = _get_preset_dir()
     pair_counts = {}
+    vg_index = {}
+    bone_index = {}
 
     if not os.path.isdir(preset_dir):
         print(f"[AutoMap] preset dir not found: {preset_dir}")
         _preset_cache = pair_counts
-        return pair_counts
+        _preset_vg_index = vg_index
+        _preset_bone_index = bone_index
+        return pair_counts, vg_index, bone_index
 
-    # Regex to extract vg and bone assignments from preset scripts
-    # Matches patterns like:  item_sub_1.vg = 'SomeName'  and  item_sub_1.bone = 'OtherName'
-    vg_pattern = re.compile(r"\.vg\s*=\s*['\"]([^'\"]+)['\"]")
-    bone_pattern = re.compile(r"\.bone\s*=\s*['\"]([^'\"]+)['\"]")
+    # Regex with backreference: match item_sub_N.vg and item_sub_N.bone as a pair.
+    # Handles other field assignments (e.g. .name) between .vg and .bone lines.
+    item_pattern = re.compile(
+        r'item_sub_(\d+)\.vg\s*=\s*[\'"]([^\'"]+)[\'"]'
+        r'.*?'
+        r'item_sub_\1\.bone\s*=\s*[\'"]([^\'"]+)[\'"]',
+        re.DOTALL
+    )
 
     file_count = 0
     for fname in os.listdir(preset_dir):
@@ -425,61 +454,60 @@ def load_preset_mappings() -> dict:
         except Exception:
             continue
 
-        vg_matches = vg_pattern.findall(content)
-        bone_matches = bone_pattern.findall(content)
-
-        # Pair them up (they appear in order: vg then bone for each item)
-        for vg_name, bone_name in zip(vg_matches, bone_matches):
+        for _, vg_name, bone_name in item_pattern.findall(content):
             key = (vg_name.lower(), bone_name.lower())
             pair_counts[key] = pair_counts.get(key, 0) + 1
+            vg_index[vg_name.lower()] = vg_index.get(vg_name.lower(), 0) + 1
+            bone_index[bone_name.lower()] = bone_index.get(bone_name.lower(), 0) + 1
 
         file_count += 1
 
     total_pairs = sum(pair_counts.values())
     print(f"[AutoMap] loaded {file_count} presets, {len(pair_counts)} unique pairs, {total_pairs} total mappings")
     _preset_cache = pair_counts
-    return pair_counts
+    _preset_vg_index = vg_index
+    _preset_bone_index = bone_index
+    return pair_counts, vg_index, bone_index
 
 
 def _invalidate_preset_cache():
     """Call this when presets might have changed (e.g. after saving a preset)."""
-    global _preset_cache
+    global _preset_cache, _preset_vg_index, _preset_bone_index
     _preset_cache = None
+    _preset_vg_index = None
+    _preset_bone_index = None
 
 
-def preset_bonus(src_name: str, tgt_name: str, preset_data: dict, max_count: int) -> float:
+def preset_bonus(src_name: str, tgt_name: str, preset_data: dict,
+                 vg_index: dict, bone_index: dict, max_count: int) -> float:
     """
     Return a bonus score [0, 1] based on historical preset data.
 
-    If the exact (src, tgt) pair was seen in presets, give high bonus.
-    Also check if either name appears as vg or bone in known pairs for partial bonus.
+    Exact match: scale frequency ratio to [0.6, 1.0].
+    Partial match: only when BOTH src and tgt are known (0.10).
+      Single-side known → 0.0 (noise prevention: false positives are worse than no match).
     """
     if not preset_data or max_count == 0:
         return 0.0
 
     key = (src_name.lower(), tgt_name.lower())
     count = preset_data.get(key, 0)
+    # Reverse lookup: bone name pairs are direction-agnostic.
+    rev_count = preset_data.get((tgt_name.lower(), src_name.lower()), 0)
+    count = max(count, rev_count)
     if count > 0:
-        # Direct match: scale by frequency (more presets = more confidence)
-        # Normalize to [0.6, 1.0] range - even rare matches get strong boost
         freq_score = min(count / max_count, 1.0)
         return 0.6 + freq_score * 0.4
 
-    # Partial match: check if src_name appears as vg in any known pair
-    # or tgt_name appears as bone in any known pair
+    # Partial match: O(1) index lookup
     src_lower = src_name.lower()
     tgt_lower = tgt_name.lower()
-    src_as_vg = sum(v for (vg, _), v in preset_data.items() if vg == src_lower)
-    tgt_as_bone = sum(v for (_, b), v in preset_data.items() if b == tgt_lower)
+    src_as_vg = vg_index.get(src_lower, 0)
+    tgt_as_bone = bone_index.get(tgt_lower, 0)
 
-    # If src is known as a vg in some mapping AND tgt is known as a bone in some mapping,
-    # give a moderate indirect bonus
     if src_as_vg > 0 and tgt_as_bone > 0:
-        return 0.25
-    if src_as_vg > 0 or tgt_as_bone > 0:
-        return 0.10
-
-    return 0.0
+        return 0.10   # both sides known, weak signal
+    return 0.0        # only one side known, no bonus (avoid noise)
 
 
 def auto_match_bones(src_armature_obj, tgt_armature_obj, threshold=0.25):
@@ -498,20 +526,61 @@ def auto_match_bones(src_armature_obj, tgt_armature_obj, threshold=0.25):
     bbox_src = _compute_bbox(src_armature_obj)
     bbox_tgt = _compute_bbox(tgt_armature_obj)
 
-    # Load preset knowledge
-    preset_data = load_preset_mappings()
+    # Load preset knowledge (now returns 3-tuple)
+    preset_data, vg_index, bone_index = load_preset_mappings()
     max_preset_count = max(preset_data.values()) if preset_data else 0
 
+    # Pre-compute bone paths and positions (avoid repeated recursion in double loop)
+    src_paths = {b.name: _get_bone_path(b) for b in src_bones}
+    tgt_paths = {b.name: _get_bone_path(b) for b in tgt_bones}
+    src_positions = {b.name: _get_bone_head_local(b) for b in src_bones}
+    tgt_positions = {b.name: _get_bone_head_local(b) for b in tgt_bones}
+
     print(f"[AutoMap] source core bones: {len(src_bones)}, target core bones: {len(tgt_bones)}")
+
+    # --- Cached internal scoring helpers (use pre-computed data) ---
+
+    def _cached_hierarchy_score(sb, tb):
+        path_a = src_paths[sb.name]
+        path_b = tgt_paths[tb.name]
+        depth_a, depth_b = len(path_a), len(path_b)
+        depth_sim = 1.0 - min(abs(depth_a - depth_b) * 0.2, 1.0)
+        min_depth = min(depth_a, depth_b)
+        if min_depth == 0:
+            return depth_sim * 0.4
+        total_weight = 0.0
+        weighted_sum = 0.0
+        for i in range(min_depth):
+            weight = i + 1
+            sim = name_score(path_a[i], path_b[i])
+            weighted_sum += sim * weight
+            total_weight += weight
+        path_name_sim = weighted_sum / total_weight if total_weight > 0 else 0.0
+        return path_name_sim * 0.6 + depth_sim * 0.4
+
+    def _cached_spatial_score(sb, tb):
+        pos_a = src_positions[sb.name]
+        pos_b = tgt_positions[tb.name]
+        norm_a = tuple((pos_a[i] - bbox_src[0][i]) / bbox_src[2] for i in range(3))
+        norm_b = tuple((pos_b[i] - bbox_tgt[0][i]) / bbox_tgt[2] for i in range(3))
+        dist = math.sqrt(sum((norm_a[i] - norm_b[i]) ** 2 for i in range(3)))
+        base_sim = max(0.0, 1.0 - dist * 2.0)
+        mirror_dist = math.sqrt(
+            (norm_a[0] - (1.0 - norm_b[0])) ** 2
+            + (norm_a[1] - norm_b[1]) ** 2
+            + (norm_a[2] - norm_b[2]) ** 2
+        )
+        mirror_sim = max(0.0, 1.0 - mirror_dist * 2.0)
+        return max(base_sim, mirror_sim * 0.6)
 
     # Build score matrix with preset bonus
     scores = []
     for sb in src_bones:
         for tb in tgt_bones:
             ns = name_score(sb.name, tb.name)
-            hs = hierarchy_score(sb, tb)
-            ss = spatial_score(sb, tb, bbox_src, bbox_tgt)
-            pb = preset_bonus(sb.name, tb.name, preset_data, max_preset_count)
+            hs = _cached_hierarchy_score(sb, tb)
+            ss = _cached_spatial_score(sb, tb)
+            pb = preset_bonus(sb.name, tb.name, preset_data, vg_index, bone_index, max_preset_count)
             # Hybrid score: preset knowledge has highest weight
             # Pairs seen in multiple presets get strongest boost
             total = 0.30 * ns + 0.15 * hs + 0.10 * ss + 0.45 * pb

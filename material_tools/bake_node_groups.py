@@ -463,7 +463,7 @@ class M_PT_BatchBakePanel(bpy.types.Panel):
     bl_idname = "M_PT_batch_bake_panel"
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = "XQFA"
+    bl_category = 'XQFA'
 
     def draw(self, context):
         layout = self.layout

@@ -200,7 +200,7 @@ class XQFA_PT_material_snapshot(bpy.types.Panel):
     bl_label = "材质连接快照"
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = "XQFA"
+    bl_category = 'XQFA'
 
     def draw(self, context):
         layout = self.layout

@@ -243,7 +243,7 @@ class XQFA_PT_material_tools(bpy.types.Panel):
     bl_label = "XQFA 材质工具"
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = "XQFA"
+    bl_category = 'XQFA'
     
     def draw(self, context):
         layout = self.layout
