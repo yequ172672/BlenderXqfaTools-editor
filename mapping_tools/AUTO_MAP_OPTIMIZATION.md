@@ -1,3 +1,6 @@
+废弃,不要查看
+再次强调,废弃方案不要查看
+
 # 自动骨骼匹配算法优化方案
 
 > 针对 `mapping_tools/modtoolkit.py` 中 `auto_match_bones()` 及相关函数的改进计划
