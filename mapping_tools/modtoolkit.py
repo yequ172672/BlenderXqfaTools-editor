@@ -650,16 +650,39 @@ def auto_match_bones(src_armature_obj, tgt_armature_obj, threshold=0.25):
         db = BoneDatabase.load()
         CANON_THRESHOLD = 0.60
 
+        # Pre-resolve all bone names to avoid repeated fuzzy matching in the inner loop
+        tgt_bones_by_name = {b.name: b for b in tgt_bones}
+
+        src_resolved = {}
         for sb in src_bones:
-            src_entry = db.resolve(sb.name, threshold=0.5)
+            entry = db.resolve(sb.name, threshold=0.5)
+            if entry is not None:
+                src_resolved[sb.name] = entry
+
+        tgt_resolved = {}
+        for tb in tgt_bones:
+            entry = db.resolve(tb.name, threshold=0.5)
+            if entry is not None:
+                tgt_resolved[tb.name] = entry
+
+        print(f"[AutoMap/CANON] resolved {len(src_resolved)}/{len(src_bones)} src, {len(tgt_resolved)}/{len(tgt_bones)} tgt")
+
+        # Group target bones by canonical entry id for O(1) lookup
+        tgt_by_entry = {}
+        for tb_name, entry in tgt_resolved.items():
+            tgt_by_entry.setdefault(entry.id, []).append(tb_name)
+
+        for sb in src_bones:
+            src_entry = src_resolved.get(sb.name)
             if src_entry is None:
                 continue
-            for tb in tgt_bones:
-                if tb.name in matched_tgt:
+            # Only iterate target bones that share the same canonical entry
+            candidates = tgt_by_entry.get(src_entry.id, [])
+            for tb_name in candidates:
+                if tb_name in matched_tgt:
                     continue
-                tgt_entry = db.resolve(tb.name, threshold=0.5)
-                if tgt_entry is None or tgt_entry.id != src_entry.id:
-                    continue
+                tb = tgt_bones_by_name[tb_name]
+                tgt_entry = tgt_resolved[tb_name]
                 score = _canonical_match_score(
                     sb, tb, src_entry, tgt_entry, db,
                     src_paths, tgt_paths, bbox_src, bbox_tgt
