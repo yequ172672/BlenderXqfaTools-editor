@@ -7,6 +7,7 @@ class MAIN_PT_XBonePanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'XQFA'
+    bl_options = {'HIDE_HEADER'}
     bl_order = -1
 
     def draw(self, context):

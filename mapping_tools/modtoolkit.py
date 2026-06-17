@@ -311,6 +311,152 @@ def _detect_side(name: str):
     return None
 
 
+# Finger type index: thumb=0, index=1, middle=2, ring=3, little=4
+_FINGER_TYPE_MAP = {
+    "thumb": 0, "indexfinger": 1, "middlefinger": 2,
+    "ringfinger": 3, "littlefinger": 4,
+}
+
+# Anatomical keyword → normalised segment (0=proximal, 1=intermediate, 2=distal).
+# Used for un-numbered finger joints (ThumbBase_L, IndexFingerTip_L, ...).
+# Conservative: only explicit positional keywords map; a bare "IndexFinger"
+# with no number and no keyword is left unmatched (ambiguous: whole-finger vs
+# proximal joint).
+_FINGER_SEG_KEYWORDS = {
+    0: ("base", "root", "proximal", "metacarpal", "metatarsal", "1a", "2a", "3a", "4a", "5a"),
+    1: ("mid", "middle", "intermediate", "1b", "2b", "3b", "4b", "5b"),
+    2: ("tip", "distal", "end", "1c", "2c", "3c", "4c", "5c"),
+}
+
+
+def _finger_side(low: str):
+    """Detect L/R side from a lowercased finger name.
+
+    Covers embedded markers (Bip001-L-Finger21) and trailing markers
+    (Thumb0_L, .l, _r, indexfinger1.right).
+    """
+    m = re.search(r"[-_.](l|r)\b", low)
+    return ("L" if m.group(1) == "l" else "R") if m else None
+
+
+def _finger_raw(name: str):
+    """Parse a finger bone name into (type, raw_segment, side, source).
+
+    Returns None if the name is not a recognised finger joint.
+
+    raw_segment is the literal segment BEFORE base normalisation:
+      - Numbered source: Thumb0/1/2, IndexFinger1/2/3 → raw = the literal digit.
+      - Numbered target: Bip001 FingerN / FingerN1 / FingerN2 → raw already
+        0=proximal/1=intermediate/2=distal (target convention is absolute).
+      - Keyworded: ThumbBase_L, IndexFingerTip_L → raw from the keyword map.
+
+    source is "src" or "tgt"; only "src" names need base normalisation (see
+    build_finger_keys), because source numbering base (0 or 1) varies per
+    skeleton while the Bip001 target convention is always absolute.
+
+    Segment normalisation to 0/1/2 happens later in build_finger_keys, where
+    the whole finger group is visible so the base offset can be inferred
+    rather than hard-coded.
+    """
+    low = name.lower()
+    side = _finger_side(low)
+
+    # Source descriptive convention: <type><digit>[_side]  (Thumb0_L, IndexFinger3_R)
+    m = re.match(r"^(thumb|indexfinger|middlefinger|ringfinger|littlefinger)(\d)", low)
+    if m:
+        return (_FINGER_TYPE_MAP[m.group(1)], int(m.group(2)), side, "src")
+
+    # Target Bip001 convention: trailing "fingerN" or "fingerN1"/"fingerN2".
+    # Target segments are absolute: N=proximal(0), N1=intermediate(1), N2=distal(2).
+    m = re.search(r"finger(\d)(\d?)$", low)
+    if m:
+        t = int(m.group(1))
+        seg = 0 if m.group(2) == "" else int(m.group(2))
+        if 0 <= t <= 4 and 0 <= seg <= 2:
+            return (t, seg, side, "tgt")
+
+    # Source descriptive convention WITHOUT a digit but WITH a positional
+    # keyword: <type><keyword>[_side]  (ThumbBase_L, IndexFingerTip_R,
+    # RingFingerMiddle_L).  Keyword maps directly to the normalised segment,
+    # so these bypass base normalisation (raw already absolute).
+    m = re.match(r"^(thumb|indexfinger|middlefinger|ringfinger|littlefinger)(\w+)", low)
+    if m:
+        ftype = m.group(1)
+        rest = m.group(2)
+        # strip a trailing side token so "thumbbase_l" -> rest="base" after
+        # removing the side; re-split on separators
+        tokens = [t for t in re.split(r"[-_.\s]", rest) if t and t not in ("l", "r", "left", "right")]
+        for tok in tokens:
+            for seg, kws in _FINGER_SEG_KEYWORDS.items():
+                if tok in kws:
+                    return (_FINGER_TYPE_MAP[ftype], seg, side, "src")
+
+    return None
+
+
+def build_finger_keys(bone_names):
+    """Compute the (type, segment, side) key for every finger bone in a batch.
+
+    Base normalisation is GROUP-AWARE rather than hard-coded:
+
+      For each (type, side) group of NUMBERED source joints, the base offset
+      is inferred as min(raw_segment) across the group.  So a 0-base group
+      {0,1,2} and a 1-base group {1,2,3} both normalise to {0,1,2}, without
+      assuming which convention any particular skeleton uses.
+
+    Target joints and keyworded source joints already carry an absolute
+    segment and pass through unchanged.
+
+    Returns {bone_name: (type, segment, side)} for all recognised fingers.
+    Bones that are not finger joints are omitted (caller falls back to
+    greedy matching for them).
+
+    Known limitation: a group with a MISSING middle segment (e.g. {0,2} for a
+    two-joint thumb) normalises by min and still pairs proximal↔distal
+    correctly only because the raw values are themselves 0 and 2.  If a group
+    is genuinely missing its proximal joint ({1,2} where 1 is actually the
+    intermediate), pure naming cannot tell — such rare cases may mis-pair
+    within the finger and are left to greedy fallback / manual review.
+    """
+    parsed = {}  # name -> (type, raw_seg, side, source)
+    # raw segments per (type, side) for NUMBERED source joints only
+    src_raw_by_group = {}
+    for name in bone_names:
+        r = _finger_raw(name)
+        if r is None:
+            continue
+        parsed[name] = r
+        t, raw, side, source = r
+        if source == "src":
+            # only numbered source joints contribute to base inference;
+            # keyworded ones (absolute) are excluded (raw already 0/1/2)
+            if not _is_keyworded_source(name):
+                src_raw_by_group.setdefault((t, side), set()).add(raw)
+
+    keys = {}
+    for name, (t, raw, side, source) in parsed.items():
+        if source == "tgt" or _is_keyworded_source(name):
+            seg = raw  # absolute
+        else:
+            offset = min(src_raw_by_group.get((t, side), {0}))
+            seg = raw - offset
+        if 0 <= seg <= 2:
+            keys[name] = (t, seg, side)
+    return keys
+
+
+def _is_keyworded_source(name: str) -> bool:
+    """True if a source finger name carries a positional keyword (absolute seg)."""
+    low = name.lower()
+    if not re.match(r"^(thumb|indexfinger|middlefinger|ringfinger|littlefinger)\D", low):
+        return False
+    for kws in _FINGER_SEG_KEYWORDS.values():
+        for kw in kws:
+            if kw in low:
+                return True
+    return False
+
+
 @lru_cache(maxsize=8192)
 def _tokenize(name: str) -> list:
     """Split bone name into tokens: camelCase, digits, and common separators (_ . , -)."""
@@ -747,6 +893,35 @@ def auto_match_bones(src_armature_obj, tgt_armature_obj, threshold=0.25):
     matched_src = set()
     matched_tgt = set()
     matched_pairs = []
+
+    # --- Finger deterministic pairing (Phase 2) ---
+    # Finger joints carry an unambiguous (type, segment, side) key (see
+    # build_finger_keys).  Pair them directly before greedy matching so that
+    # name_score ties (e.g. MiddleFinger3_L vs Finger2/Finger22) cannot
+    # produce a suboptimal greedy assignment.  Only joints that resolve on
+    # BOTH sides are paired here; anything without a counterpart falls
+    # through to normal greedy matching.
+    #
+    # Base normalisation is group-aware: the source numbering base (0 or 1)
+    # is inferred per (type, side) group from min(raw_segment), so any base
+    # convention aligns to the absolute target segments without hard-coding.
+    finger_src = build_finger_keys([b.name for b in src_bones])
+    finger_tgt = build_finger_keys([b.name for b in tgt_bones])
+    finger_src_by_key = {}
+    for name, k in finger_src.items():
+        finger_src_by_key.setdefault(k, name)
+    finger_tgt_by_key = {}
+    for name, k in finger_tgt.items():
+        finger_tgt_by_key.setdefault(k, name)
+    for k, src_name in finger_src_by_key.items():
+        tgt_name = finger_tgt_by_key.get(k)
+        if tgt_name is None:
+            continue
+        score = name_score(src_name, tgt_name)
+        matched_pairs.append((src_name, tgt_name, score))
+        matched_src.add(src_name)
+        matched_tgt.add(tgt_name)
+        print(f"  [Match] {src_name} -> {tgt_name}  score={score:.3f}  [finger]")
 
     for score, src_name, tgt_name in scores:
         if score < threshold:

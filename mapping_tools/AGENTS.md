@@ -11,11 +11,11 @@
 | File | Description |
 |------|-------------|
 | `__init__.py` | 包初始化，注册 modtoolkit 和 abp_generator 子模块 |
-| `modtoolkit.py` | 核心映射模块（~1900 行）：顶点组分配工作流、映射列表管理、自动骨骼匹配（双模式，lru_cache 记忆化、每轴 bbox 归一化、无预设重归一化、短路剪枝）、预设系统、CSV 导出、数据库管理 UI、杂项工具 |
+| `modtoolkit.py` | 核心映射模块（~1960 行）：顶点组分配工作流、映射列表管理、自动骨骼匹配（双模式，lru_cache 记忆化、每轴 bbox 归一化、无预设重归一化、短路剪枝、手指确定性配对）、预设系统、CSV 导出、数据库管理 UI、杂项工具 |
 | `bone_database.py` | 规范骨骼数据库（~220 行）：BoneDatabase 类，加载默认模板 + 用户覆盖层，精确/模糊解析，别名持久化，模块级 JSON 解析缓存（invalidate_cache 契约） |
 | `abp_generator.py` | UE ABP 生成器（~452 行）：根据映射列表生成 UE4/UE5 AnimGraphNode_Constraint 节点文本 |
 | `dev_seed_canon.py` | 开发用种子脚本：从本地预设读取映射对，填充 bone_canon_default.json 的别名 |
-| `data/bone_canon_default.json` | 默认骨骼模板（52 条 Bip01 规范骨骼，含别名列表） |
+| `data/bone_canon_default.json` | 默认骨骼模板（52 条 Bip01 规范骨骼，含别名列表；手指条目含源命名约定精确别名 thumb0/1/2、indexfinger1/2/3 等 0/1-base 混合段号） |
 
 ## Subdirectories
 
@@ -53,6 +53,8 @@
 - SIMILARITY 重归一化触发条件：`max_preset_count == 0` 时对全部 SIMILARITY 对重归一化（`NO_PRESET_WEIGHT=0.55`）
 - CANON 阈值常量：`CANON_THRESHOLD = 0.40`（函数内局部变量）
 - DB 缓存 invalidate 契约：`save_user()`/`reset_user()`/`import_user()` 写盘后自动调用 `invalidate_cache()`；`add_alias()` 仅 mutate 实例私有 dict 不触发 invalidate
+- 手指确定性配对（`build_finger_keys`）：手指骨骼的 (指型, 段号, 侧) 是无歧义键，在贪婪匹配前直接 1:1 配对，绕开 name_score 打平导致的贪婪次优解（如 `MiddleFinger3_L` 同时 token 等于 `Finger2` 和 `Finger22`）。**段号归一化是组感知的**：每个 (指型, 侧) 组按 `min(原始段号)` 推断 base offset，0-base / 1-base / 任意 base 都对齐到 0=近/1=中/2=远，不硬编码约定。无编号骨骼用解剖关键词（base/proximal/mid/intermediate/tip/distal）映射段号；纯无号无关键词的（如 `Thumb_L`）不配对、回退贪婪。目标 Bip01 段号是绝对的（FingerN/N1/N2），不参与 base 推断。仅双侧都能识别为手指才配对
+- CANON 别名打平陷阱：`resolve_fuzzy` 用严格 `>`，多个别名 `name_score` 相等时取 JSON 先出现条目 → 系统性错位。修复策略是给源命名约定加精确别名走 `resolve_exact`（如 `ringfinger3_l`→`bip01_l_finger32`），而非改模糊解析逻辑
 
 ## Dependencies
 

@@ -1,0 +1,54 @@
+[AutoMap] loaded 63 presets, 3058 unique pairs, 3530 total mappings
+[AutoMap] source core bones: 55, target core bones: 96
+  [Match] Head -> Bip001-Head  score=0.518
+  [Match] Spine -> Bip001-Spine  score=0.518
+  [Match] IndexFinger1_R -> Bip001-R-Finger1  score=0.515
+  [Match] IndexFinger1_L -> Bip001-L-Finger1  score=0.514
+  [Match] Neck -> Bip001-Neck  score=0.498
+  [Match] Thumb0_R -> Bip001-R-Finger0  score=0.489
+  [Match] Thumb0_L -> Bip001-L-Finger0  score=0.489
+  [Match] IndexFinger3_R -> Bip001-R-Finger12  score=0.471
+  [Match] IndexFinger3_L -> Bip001-L-Finger12  score=0.470
+  [Match] IndexFinger2_R -> Bip001-R-Finger11  score=0.470
+  [Match] IndexFinger2_L -> Bip001-L-Finger11  score=0.469
+  [Match] MiddleFinger3_L -> Bip001-L-Finger2  score=0.459
+  [Match] MiddleFinger3_R -> Bip001-R-Finger22  score=0.457
+  [Match] MiddleFinger2_R -> Bip001-R-Finger21  score=0.456
+  [Match] MiddleFinger2_L -> Bip001-L-Finger21  score=0.456
+  [Match] MiddleFinger1_R -> Bip001-R-Finger2  score=0.455
+  [Match] Thumb1_L -> Bip001-L-Finger01  score=0.451
+  [Match] Thumb1_R -> Bip001-R-Finger01  score=0.450
+  [Match] RingFinger3_R -> Bip001-R-Finger32  score=0.446
+  [Match] RingFinger3_L -> Bip001-L-Finger32  score=0.445
+  [Match] RingFinger2_R -> Bip001-R-Finger31  score=0.445
+  [Match] RingFinger2_L -> Bip001-L-Finger31  score=0.444
+  [Match] Thumb2_L -> Bip001-L-Finger02  score=0.444
+  [Match] RingFinger1_R -> Bip001-R-Finger3  score=0.444
+  [Match] Thumb2_R -> Bip001-R-Finger02  score=0.443
+  [Match] RingFinger1_L -> Bip001-L-Finger3  score=0.443
+  [Match] LittleFinger3_R -> Bip001-R-Finger42  score=0.438
+  [Match] LittleFinger3_L -> Bip001-L-Finger42  score=0.437
+  [Match] LittleFinger2_R -> Bip001-R-Finger41  score=0.437
+  [Match] LittleFinger2_L -> Bip001-L-Finger41  score=0.436
+  [Match] LittleFinger1_R -> Bip001-R-Finger4  score=0.436
+  [Match] LittleFinger1_L -> Bip001-L-Finger4  score=0.435
+  [Match] Left knee -> Bip001-L-Calf  score=0.423
+  [Match] Hips -> Bip001-Pelvis  score=0.422
+  [Match] Chest -> Bip001-Spine2  score=0.421
+  [Match] Left leg -> Bip001-L-Thigh  score=0.420
+  [Match] Right knee -> Bip001-R-Calf  score=0.410
+  [Match] Right arm -> Bip001-R-UpperArm  score=0.410
+  [Match] Left arm -> Bip001-L-UpperArm  score=0.410
+  [Match] Right leg -> Bip001-R-Thigh  score=0.407
+  [Match] Left wrist -> Bip001-L-Hand  score=0.391
+  [Match] Right wrist -> Bip001-R-Hand  score=0.391
+  [Match] Left shoulder -> Bip001-L-Clavicle  score=0.388
+  [Match] Right shoulder -> Bip001-R-Clavicle  score=0.388
+  [Match] Left elbow -> Bip001-L-Forearm  score=0.378
+  [Match] Right elbow -> Bip001-R-Forearm  score=0.377
+  [Match] Right ankle -> Bip001-R-Foot  score=0.376
+  [Match] Left ankle -> Bip001-L-Foot  score=0.376
+  [Unmatched source] ['Hair_back_root', 'MiddleFinger1_L', 'Tie_1', 'Tie_2', 'Tie_3', 'Left toe', 'Right toe']
+  [Unmatched target] ['Root', 'Bip001', 'Bip001-Spine1', 'Muscle_R_Eyeball', 'Muscle_L_Eyeball', 'Muscle_L_Smastoid', 'Muscle_R_Smastoid', 'P_L_Chest_Root', 'Muscle_L_Chest', 'P_R_Chest_Root', 'Muscle_R_Chest', 'Muscle_Neck', 'Bone_L_Scapula_Root', 'Bone_L_Scapula', 'Bone_R_Scapula_Root', 'Bone_R_Scapula', 'B_Besagew_L_Root', 'B_Besagew_L', 'B_Besagew_R_Root', 'B_Besagew_R', 'Bip001-L-Finger22', 'Muscle_L_Elbow', 'L_Shoulder_Armor001', 'L_Shoulder_Armor002', 'Muscle_L_Deltoid', 'Root_L_UpperChest', 'Muscle_L_UpperChest', 'Muscle_R_Elbow', 'R_Shoulder_Armor002', 'R_Shoulder_Armor001', 'Muscle_R_Deltoid', 'Root_R_UpperChest', 'Muscle_R_UpperChest', 'Bip001-L-Toe0', 'Muscle_L_Knee', 'Muscle_L_CalfTwist', 'Muscle_L_Calf', 'Muscle_L_Thigh-Twist', 'Muscle_L_Hip', 'Muscle_L_Thigh', 'Bip001-R-Toe0', 'Muscle_R_Knee', 'Muscle_R_CalfTwist', 'Muscle_R_Calf', 'Muscle_R_Thigh-Twist', 'Muscle_R_Hip', 'Muscle_R_Thigh', 'D_Execution']
+[AutoMap] Auto mapping complete: 48 matched, 7 unmatched source, 48 unmatched target
+淇℃伅: Auto mapping complete: 48 matched, 7 unmatched source, 48 unmatched target
