@@ -11,8 +11,8 @@
 | File | Description |
 |------|-------------|
 | `__init__.py` | 包初始化，注册 modtoolkit 和 abp_generator 子模块 |
-| `modtoolkit.py` | 核心映射模块（~1820 行）：顶点组分配工作流、映射列表管理、自动骨骼匹配（双模式）、预设系统、CSV 导出、数据库管理 UI、杂项工具 |
-| `bone_database.py` | 规范骨骼数据库（~180 行）：BoneDatabase 类，加载默认模板 + 用户覆盖层，精确/模糊解析，别名持久化 |
+| `modtoolkit.py` | 核心映射模块（~1900 行）：顶点组分配工作流、映射列表管理、自动骨骼匹配（双模式，lru_cache 记忆化、每轴 bbox 归一化、无预设重归一化、短路剪枝）、预设系统、CSV 导出、数据库管理 UI、杂项工具 |
+| `bone_database.py` | 规范骨骼数据库（~220 行）：BoneDatabase 类，加载默认模板 + 用户覆盖层，精确/模糊解析，别名持久化，模块级 JSON 解析缓存（invalidate_cache 契约） |
 | `abp_generator.py` | UE ABP 生成器（~452 行）：根据映射列表生成 UE4/UE5 AnimGraphNode_Constraint 节点文本 |
 | `dev_seed_canon.py` | 开发用种子脚本：从本地预设读取映射对，填充 bone_canon_default.json 的别名 |
 | `data/bone_canon_default.json` | 默认骨骼模板（52 条 Bip01 规范骨骼，含别名列表） |
@@ -50,6 +50,9 @@
 - 自动匹配结果存储在 `ListItem.vg` 和 `ListItem.bone` 属性中
 - `ListItem.bone` 有 `update=_on_list_bone_updated` 回调，CANON 模式下自动学习用户修正
 - ABP 节点生成使用 GUID 唯一标识每个节点和引脚连接
+- SIMILARITY 重归一化触发条件：`max_preset_count == 0` 时对全部 SIMILARITY 对重归一化（`NO_PRESET_WEIGHT=0.55`）
+- CANON 阈值常量：`CANON_THRESHOLD = 0.40`（函数内局部变量）
+- DB 缓存 invalidate 契约：`save_user()`/`reset_user()`/`import_user()` 写盘后自动调用 `invalidate_cache()`；`add_alias()` 仅 mutate 实例私有 dict 不触发 invalidate
 
 ## Dependencies
 

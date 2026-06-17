@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd \\\"D:/code/blender/yuitool/BlenderXqfaTools-editor\\\" && python -c \\\"\\nimport re\\nwith open('mapping_tools/modtoolkit.py','r',encoding='utf-8') as f: content = f.read()\\n\\nchecks = [\\n   ...",
+  "error": "Exit code 1\nTraceback (most recent call last):\r\n  File \"<string>\", line 27, in <module>\r\n    print(f'  {status} {name}')\r\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^\r\nUnicodeEncodeError: 'gbk' codec can't encode character '\\u2713' in position 2: illegal multibyte sequence",
+  "timestamp": "2026-06-16T17:10:15.244Z",
+  "retry_count": 1
+}

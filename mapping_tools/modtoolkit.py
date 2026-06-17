@@ -23,6 +23,7 @@ import os
 import json
 import re
 import math
+from functools import lru_cache
 
 
 class Localization:
@@ -310,6 +311,7 @@ def _detect_side(name: str):
     return None
 
 
+@lru_cache(maxsize=8192)
 def _tokenize(name: str) -> list:
     """Split bone name into tokens: camelCase, digits, and common separators (_ . , -)."""
     name = re.sub(r'([A-Z])', r'_\1', name)
@@ -317,6 +319,7 @@ def _tokenize(name: str) -> list:
     return [t for t in re.split(r"[_. \-]", name.lower()) if t]
 
 
+@lru_cache(maxsize=8192)
 def name_score(name_a: str, name_b: str) -> float:
     """Compute name similarity between two bone names -> [0, 1]."""
     tokens_a = set(_tokenize(name_a))
@@ -393,18 +396,20 @@ def _get_bone_head_local(bone) -> tuple:
 
 
 def _compute_bbox(armature_obj) -> tuple:
-    """Compute bounding box of all bones in local space. Returns (min_coord, max_coord, size)."""
+    """Compute bounding box of all bones in local space. Returns (min_coord, max_coord, sizes_per_axis)."""
     coords = []
     for b in armature_obj.data.bones:
         coords.append(tuple(b.head_local))
     if not coords:
-        return (0, 0, 0), (1, 1, 1), 1.0
+        return (0, 0, 0), (1, 1, 1), (1.0, 1.0, 1.0)
     mins = [min(c[i] for c in coords) for i in range(3)]
     maxs = [max(c[i] for c in coords) for i in range(3)]
-    size = max(maxs[i] - mins[i] for i in range(3))
-    if size < 1e-6:
-        size = 1.0
-    return tuple(mins), tuple(maxs), size
+    # Per-axis sizes (MUST be tuple, not generator — see ADR裁定#1)
+    sizes = tuple(
+        (maxs[i] - mins[i]) if (maxs[i] - mins[i]) > 1e-6 else 1.0
+        for i in range(3)
+    )
+    return tuple(mins), tuple(maxs), sizes
 
 
 def spatial_score(bone_a, bone_b, bbox_a, bbox_b) -> float:
@@ -412,9 +417,9 @@ def spatial_score(bone_a, bone_b, bbox_a, bbox_b) -> float:
     pos_a = _get_bone_head_local(bone_a)
     pos_b = _get_bone_head_local(bone_b)
 
-    # Normalize to [0,1] within each armature's bounding box
-    norm_a = tuple((pos_a[i] - bbox_a[0][i]) / bbox_a[2] for i in range(3))
-    norm_b = tuple((pos_b[i] - bbox_b[0][i]) / bbox_b[2] for i in range(3))
+    # Normalize to [0,1] within each armature's bounding box (per-axis)
+    norm_a = tuple((pos_a[i] - bbox_a[0][i]) / bbox_a[2][i] for i in range(3))
+    norm_b = tuple((pos_b[i] - bbox_b[0][i]) / bbox_b[2][i] for i in range(3))
 
     # Euclidean distance in normalized space
     dist = math.sqrt(sum((norm_a[i] - norm_b[i]) ** 2 for i in range(3)))
@@ -438,6 +443,10 @@ def spatial_score(bone_a, bone_b, bbox_a, bbox_b) -> float:
 _preset_cache = None       # cache: dict of {(vg_name, bone_name): count}
 _preset_vg_index = None   # cache: {vg_name_lower: total_count}
 _preset_bone_index = None # cache: {bone_name_lower: total_count}
+
+# SIMILARITY scoring weight constants
+NO_PRESET_WEIGHT = 0.55   # 0.30 + 0.15 + 0.10 (sum of non-preset weights)
+RENORM_NAME_WEIGHT = 0.30 / NO_PRESET_WEIGHT  # name weight after renormalisation
 
 
 def _get_preset_dir() -> str:
@@ -573,8 +582,8 @@ def _cached_hierarchy_score_paths(path_a, path_b) -> float:
 
 def _cached_spatial_score_positions(pos_a, pos_b, bbox_a, bbox_b) -> float:
     """Compute spatial score from pre-computed positions and bounding boxes."""
-    norm_a = tuple((pos_a[i] - bbox_a[0][i]) / bbox_a[2] for i in range(3))
-    norm_b = tuple((pos_b[i] - bbox_b[0][i]) / bbox_b[2] for i in range(3))
+    norm_a = tuple((pos_a[i] - bbox_a[0][i]) / bbox_a[2][i] for i in range(3))
+    norm_b = tuple((pos_b[i] - bbox_b[0][i]) / bbox_b[2][i] for i in range(3))
     dist = math.sqrt(sum((norm_a[i] - norm_b[i]) ** 2 for i in range(3)))
     base_sim = max(0.0, 1.0 - dist * 2.0)
     mirror_dist = math.sqrt(
@@ -657,7 +666,7 @@ def auto_match_bones(src_armature_obj, tgt_armature_obj, threshold=0.25):
     if algorithm == 'CANON':
         from .bone_database import BoneDatabase
         db = BoneDatabase.load()
-        CANON_THRESHOLD = 0.60
+        CANON_THRESHOLD = 0.40
 
         # Pre-resolve all bone names to avoid repeated fuzzy matching in the inner loop
         tgt_bones_by_name = {b.name: b for b in tgt_bones}
@@ -700,14 +709,36 @@ def auto_match_bones(src_armature_obj, tgt_armature_obj, threshold=0.25):
                     scores.append((score, sb.name, tb.name))
     else:
         # Existing similarity branch
-        for sb in src_bones:
-            for tb in tgt_bones:
-                ns = name_score(sb.name, tb.name)
-                hs = _cached_hierarchy_score(sb, tb)
-                ss = _cached_spatial_score(sb, tb)
-                pb = preset_bonus(sb.name, tb.name, preset_data, vg_index, bone_index, max_preset_count)
-                total = 0.30 * ns + 0.15 * hs + 0.10 * ss + 0.45 * pb
-                scores.append((total, sb.name, tb.name))
+        if max_preset_count == 0:
+            # No historical preset data: renormalize non-preset weights to [0,1]
+            # so that name/hierarchy/spatial scores are not penalised by the
+            # absent 0.45 preset slot.  (ADR P1-C)
+            # Short-circuit (P2-B): if name score alone cannot reach threshold,
+            # skip the more expensive hierarchy / spatial computations.
+            sc_cutoff = threshold * RENORM_NAME_WEIGHT
+            for sb in src_bones:
+                for tb in tgt_bones:
+                    ns = name_score(sb.name, tb.name)
+                    if ns < sc_cutoff:
+                        continue  # cannot reach threshold even with perfect hs/ss
+                    hs = _cached_hierarchy_score(sb, tb)
+                    ss = _cached_spatial_score(sb, tb)
+                    total = (0.30 * ns + 0.15 * hs + 0.10 * ss) / NO_PRESET_WEIGHT
+                    scores.append((total, sb.name, tb.name))
+        else:
+            for sb in src_bones:
+                for tb in tgt_bones:
+                    ns = name_score(sb.name, tb.name)
+                    pb = preset_bonus(sb.name, tb.name, preset_data, vg_index, bone_index, max_preset_count)
+                    # Short-circuit (P2-B): when ns==0 and pb is weak (0.0 or 0.10),
+                    # the max achievable score is 0.15+0.10=0.25 which equals threshold;
+                    # skip hs/ss unless there is some signal.
+                    if ns == 0.0 and pb <= 0.10 and 0.45 * pb < threshold:
+                        continue
+                    hs = _cached_hierarchy_score(sb, tb)
+                    ss = _cached_spatial_score(sb, tb)
+                    total = 0.30 * ns + 0.15 * hs + 0.10 * ss + 0.45 * pb
+                    scores.append((total, sb.name, tb.name))
 
     # Sort by score descending
     scores.sort(key=lambda x: x[0], reverse=True)

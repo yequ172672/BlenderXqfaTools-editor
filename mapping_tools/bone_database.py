@@ -6,6 +6,49 @@ from typing import Dict, List, Optional, Tuple
 
 import bpy
 
+# ---------------------------------------------------------------------------
+# Module-level JSON parse cache (P2-C optimisation)
+# Caches raw parsed data, NOT BoneEntry instances.  Each load() creates a
+# fresh BoneDatabase with new BoneEntry objects built from this snapshot,
+# so instance-level mutations never pollute the cache.
+# ---------------------------------------------------------------------------
+_cache_defaults_raw = None   # raw dict from bone_canon_default.json
+_cache_user_raw = None       # raw user_aliases dict from bone_canon_user.json
+
+
+def _get_cached_defaults(path: str) -> dict:
+    """Return cached parsed default JSON; read from disk on first call."""
+    global _cache_defaults_raw
+    if _cache_defaults_raw is None:
+        if not os.path.exists(path):
+            _cache_defaults_raw = {}
+        else:
+            with open(path, "r", encoding="utf-8") as f:
+                _cache_defaults_raw = json.load(f)
+    return _cache_defaults_raw
+
+
+def _get_cached_user(path: str) -> dict:
+    """Return cached parsed user JSON; read from disk on first call."""
+    global _cache_user_raw
+    if _cache_user_raw is None:
+        if not os.path.exists(path):
+            _cache_user_raw = {}
+        else:
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    _cache_user_raw = json.load(f)
+            except Exception:
+                _cache_user_raw = {}
+    return _cache_user_raw
+
+
+def invalidate_cache():
+    """Discard the parsed JSON snapshot; next load() re-reads from disk."""
+    global _cache_defaults_raw, _cache_user_raw
+    _cache_defaults_raw = None
+    _cache_user_raw = None
+
 
 class BoneEntry:
     def __init__(self, data: dict):
@@ -38,23 +81,14 @@ class BoneDatabase:
         return db
 
     def _load_default(self):
-        if not os.path.exists(self.DEFAULT_PATH):
-            return
-        with open(self.DEFAULT_PATH, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        data = _get_cached_defaults(self.DEFAULT_PATH)
         for bone_data in data.get("bones", []):
             self.entries.append(BoneEntry(bone_data))
 
     def _load_user(self):
         path = os.path.join(self.user_dir, self.USER_FILENAME)
-        if not os.path.exists(path):
-            return
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            self.user_aliases = data.get("user_aliases", {})
-        except Exception:
-            self.user_aliases = {}
+        data = _get_cached_user(path)
+        self.user_aliases = data.get("user_aliases", {})
 
     def _build_index(self):
         self._alias_index = {}
@@ -160,6 +194,7 @@ class BoneDatabase:
         }
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+        invalidate_cache()
 
     def reset_user(self):
         self.user_aliases = {}
@@ -167,6 +202,7 @@ class BoneDatabase:
         path = os.path.join(self.user_dir, self.USER_FILENAME)
         if os.path.exists(path):
             os.remove(path)
+        invalidate_cache()
 
     def export_user(self, filepath: str):
         data = {
@@ -181,4 +217,4 @@ class BoneDatabase:
             data = json.load(f)
         self.user_aliases = data.get("user_aliases", {})
         self._build_index()
-        self.save_user()
+        self.save_user()  # save_user already calls invalidate_cache()

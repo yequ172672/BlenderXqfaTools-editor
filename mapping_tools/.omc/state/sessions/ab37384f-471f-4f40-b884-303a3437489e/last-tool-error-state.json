@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd \\\"D:/code/blender/yuitool/BlenderXqfaTools-editor/mapping_tools\\\" && python -c \\\"\\nimport os, re\\npreset_dir = r'C:\\\\Users\\\\yequ\\\\AppData\\\\Roaming\\\\Blender Foundation\\\\Blender\\\\4.5\\\\scr...",
+  "error": "Exit code 1\n  File \"<string>\", line 4\r\n    pattern = re.compile(r\"item_sub_(\\d+)\\.vg\\s*=\\s*['\"]([^'\"]+)['\"].*?item_sub_\\1\\.bone\\s*=\\s*['\"]([^'\"]+)['\"]\", re.DOTALL)\r\n                                                       ^\r\nSyntaxError: closing parenthesis ']' does not match opening parenthesis '('",
+  "timestamp": "2026-06-16T17:02:56.265Z",
+  "retry_count": 1
+}
