@@ -3,6 +3,7 @@
 > 状态: **pending approval** — 规划文档，未执行。
 > 用途: 交给 AI 代理执行。本文档自包含，代理只需按章节顺序操作。
 > 目标文件: `mapping_tools/data/bone_canon_default.json`
+> 可使用skill: `bone-db-cleanup`
 > 数据来源(只读参考): `C:\Users\yequ\AppData\Roaming\Blender Foundation\Blender\4.5\scripts\presets\yuinomodtools\*.py`
 
 ---

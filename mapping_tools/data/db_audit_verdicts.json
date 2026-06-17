@@ -1,0 +1,4506 @@
+{
+  "generated_at": "2026-06-17 16:44:43",
+  "summary": {
+    "total_aliases": 714,
+    "keep": 712,
+    "remove_aux": 0,
+    "remove_mis": 0,
+    "flag": 2
+  },
+  "blacklist_suggestions": [],
+  "migration_suggestions": [],
+  "entries": {
+    "bip01_pelvis": {
+      "aliases": [
+        {
+          "alias": "hips",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "pelvis",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "hip",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "root",
+          "verdict": "FLAG",
+          "reason": "root 别名在 pelvis 合理但可能让独立根骨误解析进 pelvis。待人工决策",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-pelvis",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-pelvis",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:hips",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "spine_01",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "waist",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 pelvis",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 pelvis",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "hip_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "hip_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_spine": {
+      "aliases": [
+        {
+          "alias": "spine",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "spine lower",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "spine_lower",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-spine",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-spine",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:spine",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "spine_02",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 spine",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 spine",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_spine1": {
+      "aliases": [
+        {
+          "alias": "spine1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "spine middle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "spine_mid",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "chest",
+          "verdict": "FLAG",
+          "reason": "跨骨架歧义: chest 在中段 spine1，部分骨架 chest=上段 spine2。待人工决策",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-spine1",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-spine1",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:spine1",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "spine_03",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 spine1",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 spine1",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upper back",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_spine2": {
+      "aliases": [
+        {
+          "alias": "spine2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "spine upper",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "spine_up",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upper chest",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-spine2",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-spine2",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:spine2",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "spine_04",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 spine2",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 spine2",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_neck": {
+      "aliases": [
+        {
+          "alias": "neck",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "head neck lower",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "head_neck_lower",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-neck",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-neck",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:neck",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 neck",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 neck",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_head": {
+      "aliases": [
+        {
+          "alias": "head",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "head neck upper",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "head_neck_upper",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-head",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-head",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:head",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 head",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 head",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "skull",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "jaw",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_clavicle": {
+      "aliases": [
+        {
+          "alias": "l_clavicle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left clavicle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftshoulder",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left shoulder 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_shoulder_1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "shoulder_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_shoulder",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-clavicle",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-clavicle",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftshoulder",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l clavicle",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l clavicle",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "clavicle_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "collarbone",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left collarbone",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_collarbone",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "shoulder",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left shoulder",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_upperarm": {
+      "aliases": [
+        {
+          "alias": "l_upperarm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left upperarm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftupperarm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left shoulder 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_shoulder_2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upperarm_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_upper_arm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-upperarm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-upperarm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftupperarm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l upperarm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l upperarm",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upper_arm_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upper arm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left upper arm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bicep",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left bicep",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_forearm": {
+      "aliases": [
+        {
+          "alias": "l_forearm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left forearm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftforearm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftlowerarm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left elbow",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_elbow",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "forearm_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_lower_arm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-forearm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-forearm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftforearm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l forearm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l forearm",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "lower_arm_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "elbow_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "elbow",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left elbow",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_elbow",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "lower arm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left lower arm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_hand": {
+      "aliases": [
+        {
+          "alias": "l_hand",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left hand",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "lefthand",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left hand",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_hand",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "hand_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-hand",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-hand",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:lefthand",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l hand",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l hand",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "wrist_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "wrist",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left wrist",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_wrist",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_clavicle": {
+      "aliases": [
+        {
+          "alias": "r_clavicle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right clavicle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightshoulder",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right shoulder 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_shoulder_1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "shoulder_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_shoulder",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-clavicle",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-clavicle",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightshoulder",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r clavicle",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r clavicle",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "clavicle_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right collarbone",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_collarbone",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right shoulder",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_upperarm": {
+      "aliases": [
+        {
+          "alias": "r_upperarm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right upperarm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightupperarm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right shoulder 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_shoulder_2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upperarm_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_upper_arm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-upperarm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-upperarm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightupperarm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r upperarm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r upperarm",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upper_arm_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right upper arm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right bicep",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_forearm": {
+      "aliases": [
+        {
+          "alias": "r_forearm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right forearm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightforearm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightlowerarm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right elbow",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_elbow",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "forearm_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_lower_arm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-forearm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-forearm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightforearm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r forearm",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r forearm",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "lower_arm_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "elbow_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right elbow",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_elbow",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right lower arm",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_hand": {
+      "aliases": [
+        {
+          "alias": "r_hand",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right hand",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "righthand",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right hand",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_hand",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "hand_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-hand",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-hand",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:righthand",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r hand",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r hand",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "wrist_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right wrist",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_wrist",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_thigh": {
+      "aliases": [
+        {
+          "alias": "l_thigh",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left thigh",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftupleg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftupperleg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg left thigh",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg_left_thigh",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "thigh_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upper_leg_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-thigh",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-thigh",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftupleg",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l thigh",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l thigh",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upperleg_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upper leg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left upper leg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_upper_leg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_calf": {
+      "aliases": [
+        {
+          "alias": "l_calf",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left calf",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftleg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftlowerleg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg left knee",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg_left_knee",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "calf_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "lower_leg_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "shin_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-calf",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-calf",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftleg",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l calf",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l calf",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "lowerleg_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "knee_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "knee",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left knee",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_knee",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "shin",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left shin",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_shin",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_foot": {
+      "aliases": [
+        {
+          "alias": "l_foot",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left foot",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftfoot",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg left ankle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg_left_ankle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "foot_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-foot",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-foot",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftfoot",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l foot",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l foot",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "ankle_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "ankle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left ankle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_ankle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_toe0": {
+      "aliases": [
+        {
+          "alias": "l_toe0",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left toe",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "lefttoebase",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg left toe",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg_left_toe",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "toe_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-toe0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-toe0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:lefttoebase",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l toe0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l toe0",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_thigh": {
+      "aliases": [
+        {
+          "alias": "r_thigh",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right thigh",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightupleg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightupperleg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg right thigh",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg_right_thigh",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "thigh_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upper_leg_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-thigh",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-thigh",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightupleg",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r thigh",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r thigh",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "upperleg_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right upper leg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_upper_leg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_calf": {
+      "aliases": [
+        {
+          "alias": "r_calf",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right calf",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightleg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightlowerleg",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg right knee",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg_right_knee",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "calf_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "lower_leg_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "shin_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-calf",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-calf",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightleg",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r calf",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r calf",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "lowerleg_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "knee_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right knee",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_knee",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right shin",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_shin",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_foot": {
+      "aliases": [
+        {
+          "alias": "r_foot",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right foot",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightfoot",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg right ankle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg_right_ankle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "foot_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-foot",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-foot",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightfoot",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r foot",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r foot",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "ankle_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right ankle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_ankle",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_toe0": {
+      "aliases": [
+        {
+          "alias": "r_toe0",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right toe",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "righttoebase",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg right toe",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leg_right_toe",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "toe_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-toe0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-toe0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:righttoebase",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r toe0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r toe0",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger0": {
+      "aliases": [
+        {
+          "alias": "l_finger0",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger0",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftthumbproximal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 1a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_1a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "thumb_l",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftthumbproximal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger0",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_thumb1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left thumb 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "thumb0_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger01": {
+      "aliases": [
+        {
+          "alias": "l_finger01",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger01",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftthumbintermediate",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 1b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_1b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger01",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger01",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftthumbintermediate",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger01",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger01",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_thumb2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left thumb 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "thumb1_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger02": {
+      "aliases": [
+        {
+          "alias": "l_finger02",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger02",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftthumbdistal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 1c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_1c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger02",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger02",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftthumbdistal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger02",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger02",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_thumb3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left thumb 3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "thumb2_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger1": {
+      "aliases": [
+        {
+          "alias": "l_finger1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftindexproximal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 2a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_2a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger1",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger1",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftindexproximal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger1",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger1",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_index1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left index 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "indexfinger1_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger11": {
+      "aliases": [
+        {
+          "alias": "l_finger11",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger11",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftindexintermediate",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 2b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_2b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger11",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger11",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftindexintermediate",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger11",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger11",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_index2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left index 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "indexfinger2_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger12": {
+      "aliases": [
+        {
+          "alias": "l_finger12",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger12",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftindexdistal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 2c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_2c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger12",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger12",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftindexdistal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger12",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger12",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_index3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left index 3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "indexfinger3_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger2": {
+      "aliases": [
+        {
+          "alias": "l_finger2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftmiddleproximal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 3a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_3a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger2",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger2",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftmiddleproximal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger2",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger2",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_middle1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left middle 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "middlefinger1_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger21": {
+      "aliases": [
+        {
+          "alias": "l_finger21",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger21",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftmiddleintermediate",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 3b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_3b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger21",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger21",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftmiddleintermediate",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger21",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger21",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_middle2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left middle 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "middlefinger2_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger22": {
+      "aliases": [
+        {
+          "alias": "l_finger22",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger22",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftmiddledistal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 3c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_3c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger22",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger22",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftmiddledistal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger22",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger22",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_middle3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left middle 3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "middlefinger3_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger3": {
+      "aliases": [
+        {
+          "alias": "l_finger3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftringproximal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 4a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_4a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger3",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger3",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftringproximal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger3",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger3",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_ring1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left ring 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "ringfinger1_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger31": {
+      "aliases": [
+        {
+          "alias": "l_finger31",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger31",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftringintermediate",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 4b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_4b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger31",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger31",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftringintermediate",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger31",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger31",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_ring2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left ring 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "ringfinger2_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger32": {
+      "aliases": [
+        {
+          "alias": "l_finger32",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger32",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftringdistal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 4c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_4c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger32",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger32",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftringdistal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger32",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger32",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_ring3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left ring 3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "ringfinger3_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger4": {
+      "aliases": [
+        {
+          "alias": "l_finger4",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger4",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftpinkyproximal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 5a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_5a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger4",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger4",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftpinkyproximal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger4",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger4",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_pinky1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left pinky 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "littlefinger1_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger41": {
+      "aliases": [
+        {
+          "alias": "l_finger41",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger41",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftpinkyintermediate",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 5b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_5b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger41",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger41",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftpinkyintermediate",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger41",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger41",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_pinky2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left pinky 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "littlefinger2_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_l_finger42": {
+      "aliases": [
+        {
+          "alias": "l_finger42",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left finger42",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "leftpinkydistal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm left finger 5c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_left_finger_5c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-l-finger42",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-l-finger42",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:leftpinkydistal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 l finger42",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 l finger42",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "l_pinky3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "left pinky 3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "littlefinger3_l",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger0": {
+      "aliases": [
+        {
+          "alias": "r_finger0",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger0",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightthumbproximal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 1a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_1a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "thumb_r",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightthumbproximal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger0",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger0",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_thumb1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right thumb 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "thumb0_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger01": {
+      "aliases": [
+        {
+          "alias": "r_finger01",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger01",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightthumbintermediate",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 1b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_1b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger01",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger01",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightthumbintermediate",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger01",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger01",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_thumb2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right thumb 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "thumb1_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger02": {
+      "aliases": [
+        {
+          "alias": "r_finger02",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger02",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightthumbdistal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 1c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_1c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger02",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger02",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightthumbdistal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger02",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger02",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_thumb3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right thumb 3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "thumb2_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger1": {
+      "aliases": [
+        {
+          "alias": "r_finger1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightindexproximal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 2a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_2a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger1",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger1",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightindexproximal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger1",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger1",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_index1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right index 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "indexfinger1_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger11": {
+      "aliases": [
+        {
+          "alias": "r_finger11",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger11",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightindexintermediate",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 2b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_2b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger11",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger11",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightindexintermediate",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger11",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger11",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_index2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right index 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "indexfinger2_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger12": {
+      "aliases": [
+        {
+          "alias": "r_finger12",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger12",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightindexdistal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 2c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_2c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger12",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger12",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightindexdistal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger12",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger12",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_index3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right index 3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "indexfinger3_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger2": {
+      "aliases": [
+        {
+          "alias": "r_finger2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightmiddleproximal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 3a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_3a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger2",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger2",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightmiddleproximal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger2",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger2",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_middle1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right middle 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "middlefinger1_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger21": {
+      "aliases": [
+        {
+          "alias": "r_finger21",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger21",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightmiddleintermediate",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 3b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_3b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger21",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger21",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightmiddleintermediate",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger21",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger21",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_middle2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right middle 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "middlefinger2_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger22": {
+      "aliases": [
+        {
+          "alias": "r_finger22",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger22",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightmiddledistal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 3c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_3c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger22",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger22",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightmiddledistal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger22",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger22",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_middle3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right middle 3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "middlefinger3_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger3": {
+      "aliases": [
+        {
+          "alias": "r_finger3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightringproximal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 4a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_4a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger3",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger3",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightringproximal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger3",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger3",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_ring1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right ring 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "ringfinger1_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger31": {
+      "aliases": [
+        {
+          "alias": "r_finger31",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger31",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightringintermediate",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 4b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_4b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger31",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger31",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightringintermediate",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger31",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger31",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_ring2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right ring 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "ringfinger2_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger32": {
+      "aliases": [
+        {
+          "alias": "r_finger32",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger32",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightringdistal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 4c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_4c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger32",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger32",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightringdistal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger32",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger32",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_ring3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right ring 3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "ringfinger3_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger4": {
+      "aliases": [
+        {
+          "alias": "r_finger4",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger4",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightpinkyproximal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 5a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_5a",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger4",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger4",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightpinkyproximal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger4",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger4",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_pinky1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right pinky 1",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "littlefinger1_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger41": {
+      "aliases": [
+        {
+          "alias": "r_finger41",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger41",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightpinkyintermediate",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 5b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_5b",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger41",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger41",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightpinkyintermediate",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger41",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger41",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_pinky2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right pinky 2",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "littlefinger2_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    },
+    "bip01_r_finger42": {
+      "aliases": [
+        {
+          "alias": "r_finger42",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right finger42",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "rightpinkydistal",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm right finger 5c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "arm_right_finger_5c",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01-r-finger42",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001-r-finger42",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "mixamorig:rightpinkydistal",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip001 r finger42",
+          "verdict": "KEEP",
+          "reason": "[受保护] 标准命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "bip01 r finger42",
+          "verdict": "KEEP",
+          "reason": "[受保护] canonical/display name",
+          "suggest_entry": null
+        },
+        {
+          "alias": "r_pinky3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "right pinky 3",
+          "verdict": "KEEP",
+          "reason": "合法命名变体",
+          "suggest_entry": null
+        },
+        {
+          "alias": "littlefinger3_r",
+          "verdict": "KEEP",
+          "reason": "[受保护] 手指源命名约定 (protected pattern)",
+          "suggest_entry": null
+        }
+      ]
+    }
+  }
+}
