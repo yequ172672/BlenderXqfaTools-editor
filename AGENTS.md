@@ -1,4 +1,4 @@
-<!-- Generated: 2026-06-16 | Updated: 2026-06-16 -->
+<!-- Generated: 2026-06-16 | Updated: 2026-06-17 -->
 
 # BlenderXqfaTools-editor
 
@@ -23,7 +23,7 @@ XqfaTools 是一个面向 Blender 4.5+ 的综合 3D 建模/绑定/材质工作�
 | `attribute_tools/` | 顶点组、Shape Key、UV、顶点颜色管理，视口覆盖绘制（see `attribute_tools/AGENTS.md`） |
 | `other_tools/` | 杂项建模工具集，含八面体 UV、按材质分离、选择工具等（see `other_tools/AGENTS.md`） |
 | `material_tools/` | 材质节点烘焙、批量重命名、快照、法线格式检测等节点编辑器工具（see `material_tools/AGENTS.md`） |
-| `mapping_tools/` | 骨骼映射工作流、自动匹配、预设系统、ABP 节点生成器（see `mapping_tools/AGENTS.md`） |
+| `mapping_tools/` | 骨骼映射工作流、自动匹配（相似度/数据库双模式）、规范骨骼数据库、预设系统、ABP 节点生成器（see `mapping_tools/AGENTS.md`） |
 | `general_tools/` | 通用模型整理工具，含材质清理、去重、姿态镜像等（see `general_tools/AGENTS.md`） |
 
 ## For AI Agents
