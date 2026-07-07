@@ -80,114 +80,6 @@ class XQFA_OT_detect_normal_format(bpy.types.Operator):
         
         return {'FINISHED'}
 
-class XQFA_OT_add_packed_image(bpy.types.Operator):
-    """创建已打包图像"""
-    bl_idname = "xqfa.add_packed_image"
-    bl_label = "创建已打包图像"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    width: IntProperty(name="宽度", default=2048, min=1, max=16384)
-    height: IntProperty(name="高度", default=2048, min=1, max=16384)
-
-    def execute(self, context):
-        if not context.active_object or not context.active_object.active_material:
-            self.report({'ERROR'}, "请先选择带有材质的对象")
-            return {'CANCELLED'}
-        
-        mat = context.active_object.active_material
-        nodes = mat.node_tree.nodes
-        image_name = "已打包图像"
-            
-        image = bpy.data.images.new(
-            name=image_name, width=self.width, height=self.height,
-            alpha=True, float_buffer=False, is_data=False, tiled=False
-        )
-        
-        mouse_x = context.space_data.cursor_location[0]
-        mouse_y = context.space_data.cursor_location[1]
-        
-        tex_node = nodes.new('ShaderNodeTexImage')
-        tex_node.image = image
-        tex_node.location = (mouse_x, mouse_y)
-        
-        pixels = list(image.pixels)
-        pixels[0:4] = [1.0, 1.0, 1.0, 1.0]
-        image.pixels = pixels
-        image.update()
-        image.pack()
-        
-        self.report({'INFO'}, f"已创建打包图像纹理 {self.width}x{self.height}")
-        return {'FINISHED'}
-    
-    def invoke(self, context, event):
-        context.space_data.cursor_location_from_region(event.mouse_region_x, event.mouse_region_y)
-        return context.window_manager.invoke_props_dialog(self)
-
-
-class XQFA_OT_add_material(bpy.types.Operator):
-    bl_idname = "xqfa.add_material"
-    bl_label = "新建3贴图材质"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    width: IntProperty(name="宽度", default=2048, min=1, max=16384)
-    height: IntProperty(name="高度", default=2048, min=1, max=16384)
-
-    def execute(self, context):
-        obj = context.active_object
-        if not obj:
-            self.report({'ERROR'}, "请先选择对象")
-            return {'CANCELLED'}
-        
-        mat = obj.active_material
-        if not mat:
-            mat = bpy.data.materials.new(name=obj.name)
-            obj.data.materials.append(mat)
-        
-        mat.use_nodes = True
-        nodes = mat.node_tree.nodes
-        links = mat.node_tree.links
-        
-        bsdf = next((node for node in nodes if node.type == 'BSDF_PRINCIPLED'), None)
-        if not bsdf:
-            bsdf = nodes.new('ShaderNodeBsdfPrincipled')
-            bsdf.location = (0, 0)
-        
-        # 基础色
-        base_img = bpy.data.images.new(f"{obj.name}_BaseColor", self.width, self.height)
-        self.set_default_pixels(base_img, (0.8, 0.8, 0.8, 1.0))
-        base_node = self.create_image_node(nodes, base_img, (bsdf.location.x - 400, bsdf.location.y + 300))
-        links.new(base_node.outputs['Color'], bsdf.inputs['Base Color'])
-        
-        # 金属度 (Non-Color)
-        metal_img = bpy.data.images.new(f"{obj.name}_Metallic", self.width, self.height)
-        metal_img.colorspace_settings.name = 'Non-Color'
-        self.set_default_pixels(metal_img, (0.0, 0.0, 0.0, 1.0))
-        metal_node = self.create_image_node(nodes, metal_img, (bsdf.location.x - 400, bsdf.location.y))
-        links.new(metal_node.outputs['Color'], bsdf.inputs['Metallic'])
-        
-        # 粗糙度 (Non-Color)
-        rough_img = bpy.data.images.new(f"{obj.name}_Roughness", self.width, self.height)
-        rough_img.colorspace_settings.name = 'Non-Color'
-        self.set_default_pixels(rough_img, (0.5, 0.5, 0.5, 1.0))
-        rough_node = self.create_image_node(nodes, rough_img, (bsdf.location.x - 400, bsdf.location.y - 300))
-        links.new(rough_node.outputs['Color'], bsdf.inputs['Roughness'])
-        
-        return {'FINISHED'}
-
-    def set_default_pixels(self, image, color):
-        image.pixels = list(color) * (image.size[0] * image.size[1])
-        image.update()
-        image.pack()
-    
-    def create_image_node(self, nodes, image, location):
-        node = nodes.new('ShaderNodeTexImage')
-        node.image = image
-        node.location = location
-        return node
-
-    def invoke(self, context, event):
-        return context.window_manager.invoke_props_dialog(self)
-
 class XQFA_OT_ensure_material(bpy.types.Operator):
     """为所有选中的无材质物体创建同名材质"""
     bl_idname = "xqfa.ensure_material"
@@ -238,6 +130,114 @@ class XQFA_OT_ensure_material(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class XQFA_OT_viewer_to_material(bpy.types.Operator):
+    """将合成器 Viewer Node 结果转为打包图片并添加到当前材质"""
+    bl_idname = "xqfa.viewer_to_material"
+    bl_label = "Viewer 转材质贴图"
+    bl_description = "执行合成器，将 Viewer Node 结果创建为打包图片，添加到当前活动材质编辑器中"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    color_space: bpy.props.EnumProperty(
+        name="色彩空间",
+        items=[
+            ('NON_COLOR', "Non-Color", "保持原始数据不变，适合法线/粗糙度等数据贴图"),
+            ('SRGB', "sRGB", "应用 Linear→sRGB gamma 校正，适合颜色贴图"),
+        ],
+        default='NON_COLOR',
+    )
+
+    @classmethod
+    def poll(cls, context):
+        return (context.active_object is not None and
+                context.active_object.active_material is not None)
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.prop(self, 'color_space', expand=True)
+
+    def execute(self, context):
+        scene = context.scene
+
+        # 1. 检查合成器节点树
+        if not scene.use_nodes or not scene.node_tree:
+            self.report({'ERROR'}, "场景未启用合成器节点")
+            return {'CANCELLED'}
+
+        node_tree = scene.node_tree
+        viewer_nodes = [n for n in node_tree.nodes if n.type == 'VIEWER']
+        if not viewer_nodes:
+            self.report({'ERROR'}, "合成器中没有 Viewer Node")
+            return {'CANCELLED'}
+
+        # 2. 执行合成器
+        bpy.ops.render.render(write_still=False)
+
+        # 3. 获取 Viewer 结果图片
+        viewer_img = bpy.data.images.get("Viewer Node")
+        if not viewer_img or viewer_img.size[0] == 0:
+            self.report({'ERROR'}, "Viewer Node 结果无效，请确保 Viewer 已连接输入并重新执行")
+            return {'CANCELLED'}
+
+        # 4. 创建新图片并打包
+        new_name = "Viewer_Result"
+        while bpy.data.images.get(new_name):
+            if "." not in new_name:
+                new_name = new_name + ".001"
+            else:
+                parts = new_name.rsplit(".", 2)
+                base = ".".join(parts[:-1]) if len(parts) > 1 else parts[0]
+                num = int(parts[-1]) + 1
+                new_name = "{}.{:03d}".format(base, num)
+
+        new_img = bpy.data.images.new(
+            name=new_name,
+            width=viewer_img.size[0],
+            height=viewer_img.size[1],
+            alpha=True,
+        )
+        if self.color_space == 'SRGB':
+            # Linear → sRGB gamma 校正 (numpy 向量化)
+            w, h = viewer_img.size
+            pixels = np.empty(w * h * viewer_img.channels, dtype=np.float32)
+            viewer_img.pixels.foreach_get(pixels)
+            pixels = pixels.reshape(h, w, viewer_img.channels)
+            rgb = pixels[:, :, :3]
+            mask = rgb <= 0.0031308
+            rgb[mask] *= 12.92
+            rgb[~mask] = 1.055 * np.power(rgb[~mask], 1.0 / 2.4) - 0.055
+            new_img.pixels.foreach_set(pixels.ravel())
+        else:
+            new_img.pixels.foreach_set(viewer_img.pixels[:])
+        new_img.alpha_mode = 'CHANNEL_PACKED'
+        new_img.pack()
+        # 打包后再设色彩空间，避免像素数据被重新解释
+        new_img.colorspace_settings.name = 'sRGB' if self.color_space == 'SRGB' else 'Non-Color'
+
+        # 5. 添加到当前活动材质
+        mat = context.active_object.active_material
+        if not mat.use_nodes:
+            mat.use_nodes = True
+        mat_nodes = mat.node_tree.nodes
+        tex_node = mat_nodes.new('ShaderNodeTexImage')
+        tex_node.image = new_img
+        # 将节点放置在当前材质编辑器视图的中心
+        if context.region:
+            region = context.region
+            center_x, center_y = region.view2d.region_to_view(
+                region.width / 2, region.height / 2)
+            tex_node.location = (center_x, center_y)
+        else:
+            tex_node.location = (0, 0)
+        # tex_node.label = "Viewer Result"
+
+        cs_label = "sRGB" if self.color_space == 'SRGB' else "Non-Color"
+        self.report({'INFO'}, f"已创建打包图片 '{new_img.name}' ({new_img.size[0]}x{new_img.size[1]}, {cs_label})")
+        return {'FINISHED'}
+
+
 class XQFA_PT_material_tools(bpy.types.Panel):
     """在节点编辑器侧边栏中添加面板"""
     bl_label = "XQFA 材质工具"
@@ -249,16 +249,14 @@ class XQFA_PT_material_tools(bpy.types.Panel):
         layout = self.layout
         
         col = layout.column()
-        col.operator(XQFA_OT_add_packed_image.bl_idname, icon='IMAGE_DATA')
-        col.operator(XQFA_OT_add_material.bl_idname, icon='MATERIAL')
         col.operator(XQFA_OT_detect_normal_format.bl_idname, icon='NODE_SEL')
         col.operator(XQFA_OT_ensure_material.bl_idname, icon='MATERIAL_DATA')
+        col.operator(XQFA_OT_viewer_to_material.bl_idname, icon='IMAGE_DATA')
 
 classes = (
     XQFA_OT_detect_normal_format,
-    XQFA_OT_add_packed_image,
-    XQFA_OT_add_material,
     XQFA_OT_ensure_material,
+    XQFA_OT_viewer_to_material,
     XQFA_PT_material_tools,
 )
 

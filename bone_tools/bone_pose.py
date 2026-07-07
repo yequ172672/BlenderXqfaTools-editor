@@ -501,7 +501,7 @@ class O_BonePoseMoveToActive(bpy.types.Operator):
     2. 世界坐标直接移动获得骨骼的世界坐标后，直接使用 `bpy.ops.transform.translate` API 进行移动
     '''
     bl_idname = "xqfa.pose_move_to_active"
-    bl_label = "移动到活动骨骼"
+    bl_label = "移动:选择-->活动"
     bl_description = "将选中的骨骼移动到活动骨骼的位置（支持多骨架）"
     bl_options = {'REGISTER', 'UNDO'}
     
@@ -619,59 +619,54 @@ class O_BonePoseMoveToActive(bpy.types.Operator):
 
 class O_BonePoseRotateToActive(bpy.types.Operator):
     """
-    旋转选中骨骼的父级，使选中骨骼指向活动骨骼。
-    选中骨骼A，活动骨骼B，父级P。
+    旋转选中骨骼，使其指向活动骨骼。
+    选中骨骼A，活动骨骼B。
     """
     bl_idname = "xqfa.pose_rotate_to_active"
-    bl_label = "父级转向活动骨骼"
-    bl_description = "使用阻尼追踪约束，旋转选中骨骼(A)的父级(P)，使A指向活动骨骼(B)的位置"
+    bl_label = "旋转:选择-->活动"
+    bl_description = "使用阻尼追踪约束，旋转选中骨骼(A)，使A指向活动骨骼(B)的位置"
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     @classmethod
     def poll(cls, context):
-        """检查是否满足操作条件：姿态模式，选中骨骼（A），活动骨骼（B），且A有父级（P）"""
-        if not (context.object and 
-                context.object.type == 'ARMATURE' and 
+        """检查是否满足操作条件：姿态模式，选中骨骼（A），活动骨骼（B）"""
+        if not (context.object and
+                context.object.type == 'ARMATURE' and
                 context.object.mode == 'POSE' and
                 context.active_pose_bone and
                 len(context.selected_pose_bones) == 2):
             return False
-            
+
         return True
-    
+
     def execute(self, context):
         # 获取是否应用约束的设置
         props = context.scene.bone_pose_world_props
         apply_constraint = props.apply_constraint
-        
-        # 1. 识别 A, B, P 骨骼
+
+        # 1. 识别 A, B 骨骼
         selected_non_active_bones = [
-            bone for bone in context.selected_pose_bones 
+            bone for bone in context.selected_pose_bones
             if bone != context.active_pose_bone
         ]
-        pose_bone_A = selected_non_active_bones[0] # 选中骨骼 A
-        pose_bone_B = context.active_pose_bone       # 活动骨骼 B
-        pose_bone_P = pose_bone_A.parent             # 父级骨骼 P
-        
-        if not pose_bone_P:
-            self.report({'ERROR'}, "选中骨骼没有父级骨骼")
-            return {'CANCELLED'}
-        
+        pose_bone_A = selected_non_active_bones[0] # 选中骨骼 A（被旋转）
+        pose_bone_B = context.active_pose_bone       # 活动骨骼 B（目标）
+
         # 保存当前活动骨架
         original_active = context.view_layer.objects.active
 
-        # 必须设置pose_bone_P骨架骨骼为活动对象，不然无法应用约束
+        # 必须设置pose_bone_A骨架骨骼为活动对象，不然无法应用约束
         bpy.ops.pose.select_all(action='DESELECT')
-        context.view_layer.objects.active = pose_bone_P.id_data
-        pose_bone_P.id_data.data.bones.active = pose_bone_P.bone
-        
+        context.view_layer.objects.active = pose_bone_A.id_data
+        pose_bone_A.id_data.data.bones.active = pose_bone_A.bone
+
         # 添加阻尼追踪约束
-        damped_track_constraint = pose_bone_P.constraints.new('DAMPED_TRACK')
+        damped_track_constraint = pose_bone_A.constraints.new('DAMPED_TRACK')
         damped_track_constraint.name = "temp_rotate_to_active"
         damped_track_constraint.target = pose_bone_B.id_data
         damped_track_constraint.subtarget = pose_bone_B.name
         damped_track_constraint.track_axis = 'TRACK_Y'  # 可以根据需要调整跟踪轴
-        
+
         # 根据设置决定是否应用约束
         if apply_constraint:
             # 应用约束
@@ -680,7 +675,7 @@ class O_BonePoseRotateToActive(bpy.types.Operator):
         else:
             # 不应用约束，只添加约束
             action_text = "已添加"
-        
+
         # 恢复原始选择状态
         bpy.ops.pose.select_all(action='DESELECT')
         pose_bone_A.bone.select = True
@@ -689,109 +684,103 @@ class O_BonePoseRotateToActive(bpy.types.Operator):
         # 恢复原始活动骨架
         context.view_layer.objects.active = original_active
         context.view_layer.update()
-        self.report({'INFO'}, f"父级骨骼 '{pose_bone_P.name}' {action_text}阻尼追踪约束指向 '{pose_bone_B.name}'")
+        self.report({'INFO'}, f"选中骨骼 '{pose_bone_A.name}' {action_text}阻尼追踪约束指向 '{pose_bone_B.name}'")
         return {'FINISHED'}
 
 class O_BonePoseXYZRotateToActive(bpy.types.Operator):
     bl_idname = "xqfa.pose_xyz_rotate_to_active"
-    bl_label = "父级特定轴向转向活动骨骼"
-    bl_description = "旋转选中骨骼(A)的父级(P)，使A指向活动骨骼(B)的位置"
+    bl_label = "旋转:选择-->活动"
+    bl_description = "绕选定轴旋转选中骨骼(A)，使A的朝向指向活动骨骼(B)的位置"
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     @classmethod
     def poll(cls, context):
-        """检查是否满足操作条件：姿态模式，选中骨骼（A），活动骨骼（B），且A有父级（P）"""
-        if not (context.object and 
-                context.object.type == 'ARMATURE' and 
+        """检查是否满足操作条件：姿态模式，选中骨骼（A），活动骨骼（B）"""
+        if not (context.object and
+                context.object.type == 'ARMATURE' and
                 context.object.mode == 'POSE' and
                 context.active_pose_bone and
                 len(context.selected_pose_bones) == 2):
             return False
-            
+
         return True
-    
+
     def execute(self, context):
         props = context.scene.bone_pose_world_props
 
-        # 1. 识别 A, B, P 骨骼
+        # 1. 识别 A, B 骨骼
         selected_non_active_bones = [
-            bone for bone in context.selected_pose_bones 
+            bone for bone in context.selected_pose_bones
             if bone != context.active_pose_bone
         ]
-        pose_bone_A = selected_non_active_bones[0] # 选中骨骼 A
-        pose_bone_B = context.active_pose_bone       # 活动骨骼 B
-        pose_bone_P = pose_bone_A.parent             # 父级骨骼 P
-        
-        if not pose_bone_P:
-            self.report({'ERROR'}, "选中骨骼没有父级骨骼")
-            return {'CANCELLED'}
-        
-        # 2. 获取 A, B, P 的世界坐标
-        def get_bone_world_matrix(pose_bone):
-            armature_obj = pose_bone.id_data
-            return armature_obj.matrix_world @ pose_bone.matrix
+        pose_bone_A = selected_non_active_bones[0] # 选中骨骼 A（被旋转，pivot=A头部）
+        pose_bone_B = context.active_pose_bone       # 活动骨骼 B（目标）
 
-        loc_A_world = get_bone_world_matrix(pose_bone_A).translation
-        loc_B_world = get_bone_world_matrix(pose_bone_B).translation
-        loc_P_world = get_bone_world_matrix(pose_bone_P).translation
+        # 2. 获取世界坐标：pivot=A头，当前方向终点=A尾，目标=B头
+        def get_bone_head_world(pose_bone):
+            return (pose_bone.id_data.matrix_world @ pose_bone.matrix).translation
+
+        loc_head_world = get_bone_head_world(pose_bone_A)  # pivot
+        loc_tail_world = pose_bone_A.id_data.matrix_world @ pose_bone_A.tail  # 当前方向终点
+        loc_B_world = get_bone_head_world(pose_bone_B)     # 目标
 
         # 检查目标距离是否过近
-        if (loc_B_world - loc_P_world).length_squared < 1e-6:
-            self.report({'WARNING'}, "活动骨骼与父级骨骼位置过于接近，无法确定方向")
+        if (loc_B_world - loc_head_world).length_squared < 1e-6:
+            self.report({'WARNING'}, "活动骨骼与选中骨骼头部位置过于接近，无法确定方向")
             return {'CANCELLED'}
-        
+
         rotate_mode = props.rotate_mode
         rotate_axis_char = rotate_mode[0]  # 取第一个字符 'X', 'Y', 'Z'
-        
-         # 根据旋转模式计算投影向量
+
+         # 根据旋转模式计算投影向量（pivot 为 A 头部）
         if rotate_mode == 'Y_AXIS':
             # Y 模式：绕世界 Y 轴旋转（X-Z平面投影）
             axis_name = 'Y'
-            vec_PA = Vector((loc_A_world.x - loc_P_world.x, 0, loc_A_world.z - loc_P_world.z))
-            vec_PB = Vector((loc_B_world.x - loc_P_world.x, 0, loc_B_world.z - loc_P_world.z))
+            vec_PA = Vector((loc_tail_world.x - loc_head_world.x, 0, loc_tail_world.z - loc_head_world.z))
+            vec_PB = Vector((loc_B_world.x - loc_head_world.x, 0, loc_B_world.z - loc_head_world.z))
             axis_vector = Vector((0, 1, 0))
 
         elif rotate_mode == 'X_AXIS':
             # X 模式：绕世界 X 轴旋转（Y-Z平面投影）
             axis_name = 'X'
-            vec_PA = Vector((0, loc_A_world.y - loc_P_world.y, loc_A_world.z - loc_P_world.z))
-            vec_PB = Vector((0, loc_B_world.y - loc_P_world.y, loc_B_world.z - loc_P_world.z))
+            vec_PA = Vector((0, loc_tail_world.y - loc_head_world.y, loc_tail_world.z - loc_head_world.z))
+            vec_PB = Vector((0, loc_B_world.y - loc_head_world.y, loc_B_world.z - loc_head_world.z))
             axis_vector = Vector((1, 0, 0))
 
         elif rotate_mode == 'Z_AXIS':
             # Z 模式：绕世界 Z 轴旋转（X-Y平面投影）
             axis_name = 'Z'
-            vec_PA = Vector((loc_A_world.x - loc_P_world.x, loc_A_world.y - loc_P_world.y, 0))
-            vec_PB = Vector((loc_B_world.x - loc_P_world.x, loc_B_world.y - loc_P_world.y, 0))
+            vec_PA = Vector((loc_tail_world.x - loc_head_world.x, loc_tail_world.y - loc_head_world.y, 0))
+            vec_PB = Vector((loc_B_world.x - loc_head_world.x, loc_B_world.y - loc_head_world.y, 0))
             axis_vector = Vector((0, 0, 1))
 
         # 检查向量长度
         if vec_PA.length_squared < 1e-6 or vec_PB.length_squared < 1e-6:
             self.report({'WARNING'}, f"在{axis_name}模式投影后向量过短，无法旋转")
             return {'CANCELLED'}
-        
+
         # 归一化向量
         vec_PA.normalize()
         vec_PB.normalize()
-        
+
         # 计算角度（使用点积和叉积确定符号）
         dot = max(-1.0, min(1.0, vec_PA.dot(vec_PB)))  # 限制在[-1,1]范围内
         angle = math.acos(dot)
-        
+
         # 使用叉积确定旋转方向
         cross = vec_PA.cross(vec_PB)
         if cross.dot(axis_vector) < 0:
             angle = -angle
-        
+
         print(f"计算的角度: {math.degrees(angle):.2f}°")
-        
+
         # 保存当前活动骨架
         original_active = context.view_layer.objects.active
 
-        # 设置正确的活动对象和骨骼选择
+        # 设置正确的活动对象和骨骼选择（选中骨骼A自身）
         bpy.ops.pose.select_all(action='DESELECT')
-        context.view_layer.objects.active = pose_bone_P.id_data
-        pose_bone_P.id_data.data.bones.active = pose_bone_P.bone
+        context.view_layer.objects.active = pose_bone_A.id_data
+        pose_bone_A.id_data.data.bones.active = pose_bone_A.bone
 
         # 使用bpy.ops.transform.rotate执行旋转
         bpy.ops.transform.rotate(
@@ -814,67 +803,61 @@ class O_BonePoseXYZRotateToActive(bpy.types.Operator):
         # 恢复原始活动骨架
         context.view_layer.objects.active = original_active
         context.view_layer.update()
-        self.report({'INFO'}, f"父级骨骼 '{pose_bone_P.name}' 绕世界{axis_name}轴旋转 {math.degrees(angle):.2f}°")
+        self.report({'INFO'}, f"选中骨骼 '{pose_bone_A.name}' 绕世界{axis_name}轴旋转 {math.degrees(angle):.2f}°")
         return {'FINISHED'}
 
 
 class O_BonePoseXYZResizeToActive(bpy.types.Operator):
     bl_idname = "xqfa.pose_xyz_resize_to_active"
-    bl_label = "父级缩放到活动骨骼"
-    bl_description = "缩放选中骨骼(A)的父级(P)，使A的位置与活动骨骼(B)的位置在选定轴向上匹配\n仅推荐在骨骼朝向正确，使用局部"
+    bl_label = "缩放:选择-->活动"
+    bl_description = "缩放选中骨骼(A)，使A的尾部位置与活动骨骼(B)的位置在选定轴向上匹配\n仅推荐在骨骼朝向正确，使用局部"
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     @classmethod
     def poll(cls, context):
-        """检查是否满足操作条件：姿态模式，选中骨骼（A），活动骨骼（B），且A有父级（P）"""
-        if not (context.object and 
-                context.object.type == 'ARMATURE' and 
+        """检查是否满足操作条件：姿态模式，选中骨骼（A），活动骨骼（B）"""
+        if not (context.object and
+                context.object.type == 'ARMATURE' and
                 context.object.mode == 'POSE' and
                 context.active_pose_bone and
                 len(context.selected_pose_bones) == 2):
             return False
         return True
-    
+
     def execute(self, context):
         props = context.scene.bone_pose_world_props
 
-        # 1. 识别 A, B, P 骨骼
+        # 1. 识别 A, B 骨骼
         selected_non_active_bones = [
-            bone for bone in context.selected_pose_bones 
+            bone for bone in context.selected_pose_bones
             if bone != context.active_pose_bone
         ]
-        pose_bone_A = selected_non_active_bones[0]  # 选中骨骼 A
-        pose_bone_B = context.active_pose_bone       # 活动骨骼 B
-        pose_bone_P = pose_bone_A.parent             # 父级骨骼 P
-        
-        if not pose_bone_P:
-            self.report({'ERROR'}, "选中骨骼没有父级骨骼")
-            return {'CANCELLED'}
-        
-        # 2. 获取 A, B, P 的世界坐标
-        def get_bone_world_matrix(pose_bone):
-            armature_obj = pose_bone.id_data
-            return armature_obj.matrix_world @ pose_bone.matrix
+        pose_bone_A = selected_non_active_bones[0]  # 选中骨骼 A（被缩放，pivot=A头部）
+        pose_bone_B = context.active_pose_bone       # 活动骨骼 B（目标）
 
-        loc_A_world = get_bone_world_matrix(pose_bone_A).translation
-        loc_B_world = get_bone_world_matrix(pose_bone_B).translation
-        loc_P_world = get_bone_world_matrix(pose_bone_P).translation
+        # 2. 获取世界坐标：pivot=A头，当前方向终点=A尾，目标=B头
+        def get_bone_head_world(pose_bone):
+            return (pose_bone.id_data.matrix_world @ pose_bone.matrix).translation
 
-        # 3. 计算 PA 和 PB 向量及其长度
-        vec_PA = loc_A_world - loc_P_world
-        vec_PB = loc_B_world - loc_P_world
-        
+        loc_head_world = get_bone_head_world(pose_bone_A)  # pivot
+        loc_tail_world = pose_bone_A.id_data.matrix_world @ pose_bone_A.tail  # 当前方向终点
+        loc_B_world = get_bone_head_world(pose_bone_B)     # 目标
+
+        # 3. 计算 PA 和 PB 向量及其长度（pivot 为 A 头部）
+        vec_PA = loc_tail_world - loc_head_world
+        vec_PB = loc_B_world - loc_head_world
+
         # 检查向量长度，避免除零错误
         if vec_PA.length_squared < 1e-6:
-            self.report({'WARNING'}, "父级骨骼到选中骨骼的距离过小，无法计算缩放")
+            self.report({'WARNING'}, "选中骨骼的长度过小，无法计算缩放")
             return {'CANCELLED'}
-        
+
         # 4. 计算缩放比例 S = |PB| / |PA|
         scale_factor = vec_PB.length / vec_PA.length
-        
+
         # 5. 构建缩放因子向量
         scale_factors = Vector((1.0, 1.0, 1.0))
-        
+
         # 根据选择的轴向应用统一的缩放比例
         if props.resize_x:
             scale_factors.x = scale_factor
@@ -882,23 +865,23 @@ class O_BonePoseXYZResizeToActive(bpy.types.Operator):
             scale_factors.y = scale_factor
         if props.resize_z:
             scale_factors.z = scale_factor
-        
+
         # 检查是否有有效的缩放轴向
         if not (props.resize_x or props.resize_y or props.resize_z):
             self.report({'WARNING'}, "X, Y, Z 轴分量至少要选择一个才能缩放")
             return {'CANCELLED'}
-        
+
         # 6. 保存当前活动骨架
         original_active = context.view_layer.objects.active
 
-        # 7. 设置正确的活动对象和骨骼选择
+        # 7. 设置正确的活动对象和骨骼选择（选中骨骼A自身）
         bpy.ops.pose.select_all(action='DESELECT')
-        context.view_layer.objects.active = pose_bone_P.id_data
-        pose_bone_P.id_data.data.bones.active = pose_bone_P.bone
+        context.view_layer.objects.active = pose_bone_A.id_data
+        pose_bone_A.id_data.data.bones.active = pose_bone_A.bone
 
         # 8. 根据选择的坐标系执行缩放操作
         resize_orient = props.resize_orient
-        
+
         if resize_orient == 'GLOBAL':
             # 全局坐标系缩放
             constraint_axis = (props.resize_x, props.resize_y, props.resize_z)
@@ -913,8 +896,8 @@ class O_BonePoseXYZResizeToActive(bpy.types.Operator):
             )
         else:
             # 局部坐标系缩放
-            # 获取父级骨骼的局部坐标系矩阵
-            local_matrix = pose_bone_P.matrix.to_3x3()
+            # 获取选中骨骼的局部坐标系矩阵
+            local_matrix = pose_bone_A.matrix.to_3x3()
             constraint_axis = (props.resize_x, props.resize_y, props.resize_z)
             bpy.ops.transform.resize(
                 value=scale_factors,
@@ -934,7 +917,7 @@ class O_BonePoseXYZResizeToActive(bpy.types.Operator):
         # 恢复原始活动骨架
         context.view_layer.objects.active = original_active
         context.view_layer.update()
-        
+
         # 报告操作结果
         axis_info = []
         if props.resize_x:
@@ -943,8 +926,8 @@ class O_BonePoseXYZResizeToActive(bpy.types.Operator):
             axis_info.append("Y")
         if props.resize_z:
             axis_info.append("Z")
-        
-        self.report({'INFO'}, f"父级骨骼 '{pose_bone_P.name}' 在{resize_orient}坐标系下缩放 {scale_factor:.3f}倍 (轴向: {', '.join(axis_info)})")
+
+        self.report({'INFO'}, f"选中骨骼 '{pose_bone_A.name}' 在{resize_orient}坐标系下缩放 {scale_factor:.3f}倍 (轴向: {', '.join(axis_info)})")
         return {'FINISHED'}
 
 class O_BonePoseUnlockAll(bpy.types.Operator):
