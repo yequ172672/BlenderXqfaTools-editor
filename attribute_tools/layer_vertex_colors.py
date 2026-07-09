@@ -10,6 +10,7 @@ from bpy.props import (
     FloatVectorProperty,
     CollectionProperty,
     PointerProperty,
+    BoolProperty,
 )
 from bpy.types import PropertyGroup
 
@@ -20,9 +21,42 @@ class FaceColorManager:
     DEFAULT_COLOR = (0.0, 0.0, 0.0, 1.0)
     ATTR_SLOT = 'layer_vertex_slot'
     ATTR_COLOR = 'layer_vertex_color'
+    ATTR_HASH = 'layer_vertex_hash'
 
     _pending = {}  # ball_hash → color
     _timer = None
+
+    # ---- 色彩空间工具（bmesh = sRGB, mesh attr = linear） ----
+
+    @staticmethod
+    def _linear_to_srgb(c):
+        """将 linear (0-1) 转换为 sRGB (0-1)，作用于单个通道"""
+        if c <= 0.0031308:
+            return 12.92 * c
+        return 1.055 * (c ** (1.0 / 2.4)) - 0.055
+
+    @staticmethod
+    def _srgb_to_linear(c):
+        """将 sRGB (0-1) 转换为 linear (0-1)，作用于单个通道"""
+        if c <= 0.04045:
+            return c / 12.92
+        return ((c + 0.055) / 1.055) ** 2.4
+
+    @staticmethod
+    def _color_linear_to_srgb(color):
+        """将 linear RGBA 元组转换为 sRGB RGBA 元组"""
+        return tuple(
+            FaceColorManager._linear_to_srgb(color[i]) if i < 3 else color[i]
+            for i in range(4)
+        )
+
+    @staticmethod
+    def _color_srgb_to_linear(color):
+        """将 sRGB RGBA 元组转换为 linear RGBA 元组"""
+        return tuple(
+            FaceColorManager._srgb_to_linear(color[i]) if i < 3 else color[i]
+            for i in range(4)
+        )
 
     @staticmethod
     def _do_sync(ball_hash, color):
@@ -52,10 +86,11 @@ class FaceColorManager:
                 slot_layer = bm.loops.layers.int.get(attr_slot)
                 color_layer = bm.loops.layers.color.get(attr_color)
                 if slot_layer is not None and color_layer is not None:
+                    srgb_color = FaceColorManager._color_linear_to_srgb(color)
                     for f in bm.faces:
                         for loop in f.loops:
                             if loop[slot_layer] in matching:
-                                loop[color_layer] = color
+                                loop[color_layer] = srgb_color
                     bmesh.update_edit_mesh(mesh)
             else:
                 for i in range(len(mesh.loops)):
@@ -104,18 +139,24 @@ class FaceColorManager:
         """确保网格存在面颜色属性（对象模式）"""
         attr_slot = FaceColorManager.ATTR_SLOT
         attr_color = FaceColorManager.ATTR_COLOR
+        attr_hash = FaceColorManager.ATTR_HASH
         if mesh.attributes.get(attr_slot) is None:
             attr = mesh.attributes.new(attr_slot, 'INT', 'CORNER')
             for i in range(len(mesh.loops)):
                 attr.data[i].value = FaceColorManager.UNSET_SLOT
         if mesh.attributes.get(attr_color) is None:
             mesh.attributes.new(attr_color, 'BYTE_COLOR', 'CORNER')
+        if mesh.attributes.get(attr_hash) is None:
+            attr = mesh.attributes.new(attr_hash, 'STRING', 'CORNER')
+            for i in range(len(mesh.loops)):
+                attr.data[i].value = b""
 
     @staticmethod
     def ensure_attrs_edit(bm):
         """确保 bmesh 存在面颜色属性层（编辑模式）"""
         attr_slot = FaceColorManager.ATTR_SLOT
         attr_color = FaceColorManager.ATTR_COLOR
+        attr_hash = FaceColorManager.ATTR_HASH
         slot_layer = bm.loops.layers.int.get(attr_slot)
         if slot_layer is None:
             slot_layer = bm.loops.layers.int.new(attr_slot)
@@ -128,7 +169,13 @@ class FaceColorManager:
             for f in bm.faces:
                 for loop in f.loops:
                     loop[color_layer] = FaceColorManager.DEFAULT_COLOR
-        return slot_layer, color_layer
+        hash_layer = bm.loops.layers.string.get(attr_hash)
+        if hash_layer is None:
+            hash_layer = bm.loops.layers.string.new(attr_hash)
+            for f in bm.faces:
+                for loop in f.loops:
+                    loop[hash_layer] = b""
+        return slot_layer, color_layer, hash_layer
 
     # ---- 指定 / 取消指定 ----
 
@@ -137,25 +184,39 @@ class FaceColorManager:
         """将指定物体选中面的所有面拐写入给定的槽索引与颜色"""
         attr_slot = FaceColorManager.ATTR_SLOT
         attr_color = FaceColorManager.ATTR_COLOR
+        attr_hash = FaceColorManager.ATTR_HASH
+        # 根据 slot_idx 查找对应 ball_hash
+        if slot_idx == FaceColorManager.UNSET_SLOT:
+            ball_hash = ""
+        else:
+            data = obj.layer_vertex_colors
+            if 0 <= slot_idx < len(data.slots):
+                ball_hash = data.slots[slot_idx].ball_hash
+            else:
+                ball_hash = ""
         mesh = obj.data
         if obj.mode == 'EDIT':
             bm = bmesh.from_edit_mesh(mesh)
-            slot_layer, color_layer = FaceColorManager.ensure_attrs_edit(bm)
+            slot_layer, color_layer, hash_layer = FaceColorManager.ensure_attrs_edit(bm)
+            srgb_color = FaceColorManager._color_linear_to_srgb(color)
             for f in bm.faces:
                 if f.select:
                     for loop in f.loops:
                         loop[slot_layer] = slot_idx
-                        loop[color_layer] = color
+                        loop[color_layer] = srgb_color
+                        loop[hash_layer] = ball_hash.encode() if ball_hash else b""
             bmesh.update_edit_mesh(mesh)
         else:
             FaceColorManager.ensure_attrs_object(mesh)
             slot_attr = mesh.attributes[attr_slot]
             color_attr = mesh.attributes[attr_color]
+            hash_attr = mesh.attributes[attr_hash]
             for poly in mesh.polygons:
                 if poly.select:
                     for loop_idx in poly.loop_indices:
                         slot_attr.data[loop_idx].value = slot_idx
                         color_attr.data[loop_idx].color = color
+                        hash_attr.data[loop_idx].value = ball_hash.encode()
 
     @staticmethod
     def set_face_color_for_selected(context, slot_idx, color):
@@ -216,12 +277,14 @@ class FaceColorManager:
         """删除槽 removed_idx 后清理网格数据：将该索引的面拐归为未设置，大于该索引的递减"""
         attr_slot = FaceColorManager.ATTR_SLOT
         attr_color = FaceColorManager.ATTR_COLOR
+        attr_hash = FaceColorManager.ATTR_HASH
         mesh = obj.data
 
         if obj.mode == 'EDIT':
             bm = bmesh.from_edit_mesh(mesh)
             slot_layer = bm.loops.layers.int.get(attr_slot)
             color_layer = bm.loops.layers.color.get(attr_color)
+            hash_layer = bm.loops.layers.string.get(attr_hash)
             if slot_layer is not None and color_layer is not None:
                 for f in bm.faces:
                     for loop in f.loops:
@@ -229,12 +292,15 @@ class FaceColorManager:
                         if val == removed_idx:
                             loop[slot_layer] = FaceColorManager.UNSET_SLOT
                             loop[color_layer] = FaceColorManager.DEFAULT_COLOR
+                            if hash_layer is not None:
+                                loop[hash_layer] = b""
                         elif val > removed_idx:
                             loop[slot_layer] = val - 1
                 bmesh.update_edit_mesh(mesh)
         else:
             slot_attr = mesh.attributes.get(attr_slot)
             color_attr = mesh.attributes.get(attr_color)
+            hash_attr = mesh.attributes.get(attr_hash)
             if slot_attr is None or color_attr is None:
                 return
             for i in range(len(mesh.loops)):
@@ -242,6 +308,8 @@ class FaceColorManager:
                 if val == removed_idx:
                     slot_attr.data[i].value = FaceColorManager.UNSET_SLOT
                     color_attr.data[i].color = FaceColorManager.DEFAULT_COLOR
+                    if hash_attr is not None:
+                        hash_attr.data[i].value = b""
                 elif val > removed_idx:
                     slot_attr.data[i].value = val - 1
 
@@ -262,10 +330,11 @@ class FaceColorManager:
             slot_layer = bm.loops.layers.int.get(attr_slot)
             color_layer = bm.loops.layers.color.get(attr_color)
             if slot_layer is not None and color_layer is not None:
+                srgb_color = FaceColorManager._color_linear_to_srgb(color)
                 for f in bm.faces:
                     for loop in f.loops:
                         if loop[slot_layer] == slot_idx:
-                            loop[color_layer] = color
+                            loop[color_layer] = srgb_color
                 bmesh.update_edit_mesh(mesh)
         else:
             slot_attr = mesh.attributes.get(attr_slot)
@@ -278,103 +347,229 @@ class FaceColorManager:
 
     @staticmethod
     def rebuild_from_mesh(obj):
-        """从网格的面拐颜色重建物体槽位数据（合并物体后恢复用）"""
+        """从网格的面拐颜色重建物体槽位数据（合并物体后恢复用）
+        优先使用 (slot, hash) 去重；无 hash 时回退到 (slot, color) 去重
+        """
         attr_slot = FaceColorManager.ATTR_SLOT
         attr_color = FaceColorManager.ATTR_COLOR
+        attr_hash = FaceColorManager.ATTR_HASH
         mesh = obj.data
         slot_attr = mesh.attributes.get(attr_slot)
         color_attr = mesh.attributes.get(attr_color)
         if slot_attr is None or color_attr is None:
             return 0
 
-        # 收集唯一颜色 → 找或建全局球
-        mesh_colors = []  # [(float_color, int_key), ...] 按出现顺序
-        seen_keys = set()
+        hash_attr = mesh.attributes.get(attr_hash)  # may be None
+
+        # 预建已有球的 key → ball 索引
         balls = bpy.context.scene.xqfa_color_balls
 
         def _to_key(c):
             return (int(round(c[0] * 255)), int(round(c[1] * 255)),
                     int(round(c[2] * 255)), int(round(c[3] * 255)))
 
-        # 预建已有球的 key → ball 索引（只读，不反复遍历 CollectionProperty）
         key_to_ball = {}
         for ball in balls:
             k = _to_key(ball.color)
             if k not in key_to_ball:
                 key_to_ball[k] = ball
 
+        # hash → ball 快速查找
+        hash_to_ball = {b.hash_val: b for b in balls}
+
+        # ---- 收集唯一的 (slot, 去重键) 组 ----
+        # mesh_entries: [(dedup_key, (r,g,b,a), hash_str_or_empty), ...]
+        mesh_entries = []
+        seen = set()
+
         if obj.mode == 'EDIT':
             bm = bmesh.from_edit_mesh(mesh)
             slot_layer = bm.loops.layers.int.get(attr_slot)
             color_layer = bm.loops.layers.color.get(attr_color)
+            hash_layer = bm.loops.layers.string.get(attr_hash)
             if slot_layer is None or color_layer is None:
                 return 0
+
             for f in bm.faces:
                 for loop in f.loops:
-                    if loop[slot_layer] == FaceColorManager.UNSET_SLOT:
+                    val = loop[slot_layer]
+                    if val == FaceColorManager.UNSET_SLOT:
                         continue
-                    c = loop[color_layer]
-                    k = _to_key(c)
-                    if k not in seen_keys:
-                        seen_keys.add(k)
-                        mesh_colors.append((c, k))
+                    c = FaceColorManager._color_srgb_to_linear(loop[color_layer])
+                    h_str = ""
+                    if hash_layer is not None:
+                        h_bytes = loop[hash_layer]
+                        if h_bytes:
+                            h_str = h_bytes.decode('utf-8', errors='replace').rstrip('\x00')
+                    dedup_key = (val, h_str) if h_str else (val, _to_key(c))
+                    if dedup_key not in seen:
+                        seen.add(dedup_key)
+                        mesh_entries.append((dedup_key, c, h_str))
 
+            # ---- 重建槽位 ----
             data = obj.layer_vertex_colors
             data.slots.clear()
             key_to_idx = {}
-            for idx, (c, k) in enumerate(mesh_colors):
-                ball = key_to_ball.get(k)
+
+            for idx, (dedup_key, c, h_str) in enumerate(mesh_entries):
+                ball = None
+                if h_str:
+                    ball = hash_to_ball.get(h_str) or FaceColorManager.find_global_ball(h_str)
+                if ball is None:
+                    ball = key_to_ball.get(_to_key(c))
                 if ball is None:
                     ball = balls.add()
                     ball.name = f"Color.{len(balls) + 1:03d}"
                     ball.hash_val = uuid.uuid4().hex
                     ball.color = c
-                    key_to_ball[k] = ball
+                    key_to_ball[_to_key(c)] = ball
+                    hash_to_ball[ball.hash_val] = ball
+
                 slot = data.slots.add()
                 slot.ball_hash = ball.hash_val
-                key_to_idx[k] = idx
+                key_to_idx[dedup_key] = idx
 
-            # 重映射面拐 INT 索引
+            # ---- 重映射面拐与 hash ----
             for f in bm.faces:
                 for loop in f.loops:
-                    if loop[slot_layer] == FaceColorManager.UNSET_SLOT:
+                    val = loop[slot_layer]
+                    if val == FaceColorManager.UNSET_SLOT:
                         continue
-                    k = _to_key(loop[color_layer])
-                    loop[slot_layer] = key_to_idx.get(k, FaceColorManager.UNSET_SLOT)
+                    c = FaceColorManager._color_srgb_to_linear(loop[color_layer])
+                    h_str = ""
+                    if hash_layer is not None:
+                        h_bytes = loop[hash_layer]
+                        if h_bytes:
+                            h_str = h_bytes.decode('utf-8', errors='replace').rstrip('\x00')
+                    key = (val, h_str) if h_str else (val, _to_key(c))
+                    new_idx = key_to_idx.get(key, FaceColorManager.UNSET_SLOT)
+                    loop[slot_layer] = new_idx
+                    if new_idx != FaceColorManager.UNSET_SLOT and hash_layer is not None:
+                        loop[hash_layer] = data.slots[new_idx].ball_hash.encode()
+
             bmesh.update_edit_mesh(mesh)
         else:
             for i in range(len(mesh.loops)):
-                if slot_attr.data[i].value == FaceColorManager.UNSET_SLOT:
+                val = slot_attr.data[i].value
+                if val == FaceColorManager.UNSET_SLOT:
                     continue
                 c = color_attr.data[i].color
-                k = _to_key(c)
-                if k not in seen_keys:
-                    seen_keys.add(k)
-                    mesh_colors.append((c, k))
+                _h = hash_attr.data[i].value if hash_attr is not None else b""
+                h_str = _h.decode('utf-8', errors='replace').rstrip('\x00')
+                dedup_key = (val, h_str) if h_str else (val, _to_key(c))
+                if dedup_key not in seen:
+                    seen.add(dedup_key)
+                    mesh_entries.append((dedup_key, c, h_str))
 
+            # ---- 重建槽位 ----
             data = obj.layer_vertex_colors
             data.slots.clear()
             key_to_idx = {}
-            for idx, (c, k) in enumerate(mesh_colors):
-                ball = key_to_ball.get(k)
+
+            for idx, (dedup_key, c, h_str) in enumerate(mesh_entries):
+                ball = None
+                if h_str:
+                    ball = hash_to_ball.get(h_str) or FaceColorManager.find_global_ball(h_str)
+                if ball is None:
+                    ball = key_to_ball.get(_to_key(c))
                 if ball is None:
                     ball = balls.add()
                     ball.name = f"Color.{len(balls) + 1:03d}"
                     ball.hash_val = uuid.uuid4().hex
                     ball.color = c
-                    key_to_ball[k] = ball
+                    key_to_ball[_to_key(c)] = ball
+                    hash_to_ball[ball.hash_val] = ball
+
                 slot = data.slots.add()
                 slot.ball_hash = ball.hash_val
-                key_to_idx[k] = idx
+                key_to_idx[dedup_key] = idx
 
+            # ---- 重映射面拐（只修 slot 和 hash，不覆盖颜色） ----
             for i in range(len(mesh.loops)):
-                if slot_attr.data[i].value == FaceColorManager.UNSET_SLOT:
+                val = slot_attr.data[i].value
+                if val == FaceColorManager.UNSET_SLOT:
                     continue
-                k = _to_key(color_attr.data[i].color)
-                slot_attr.data[i].value = key_to_idx.get(k, FaceColorManager.UNSET_SLOT)
+                c = color_attr.data[i].color
+                _h = hash_attr.data[i].value if hash_attr is not None else b""
+                h_str = _h.decode('utf-8', errors='replace').rstrip('\x00')
+                key = (val, h_str) if h_str else (val, _to_key(c))
+                new_idx = key_to_idx.get(key, FaceColorManager.UNSET_SLOT)
+                slot_attr.data[i].value = new_idx
+                if new_idx != FaceColorManager.UNSET_SLOT and hash_attr is not None:
+                    hash_attr.data[i].value = data.slots[new_idx].ball_hash.encode()
 
         data.active_index = 0 if len(data.slots) > 0 else -1
         return len(data.slots)
+
+    _conflict_cache = {}  # {mesh_ptr: (loop_count, n_slots, result)}
+
+    @staticmethod
+    def has_slot_conflict(obj):
+        """检测 mesh 上的 (slot, hash) 数据与 obj 的槽位列表是否存在冲突（合并后常见）
+        结果按 (mesh 指针, loop数, 槽位数) 缓存，避免高频面板重绘时反复扫描。
+        """
+        if obj.type != 'MESH':
+            return False
+        mesh = obj.data
+        ptr = mesh.as_pointer()
+        loop_count = len(mesh.loops)
+        n_slots = len(obj.layer_vertex_colors.slots)
+
+        cached = FaceColorManager._conflict_cache.get(ptr)
+        if cached is not None and cached[0] == loop_count and cached[1] == n_slots:
+            return cached[2]
+
+        slot_attr = mesh.attributes.get(FaceColorManager.ATTR_SLOT)
+        hash_attr = mesh.attributes.get(FaceColorManager.ATTR_HASH)
+        if slot_attr is None or hash_attr is None:
+            FaceColorManager._conflict_cache[ptr] = (loop_count, n_slots, False)
+            return False
+
+        data = obj.layer_vertex_colors
+
+        # 确保 attribute 数据长度与 loop 数一致，否则跳过检测
+        n_loops = len(mesh.loops)
+        if len(slot_attr.data) != n_loops or len(hash_attr.data) != n_loops:
+            FaceColorManager._conflict_cache[ptr] = (loop_count, n_slots, False)
+            return False
+
+        # 收集每个 slot 索引上出现的不同 hash 值
+        slot_to_hashes = {}
+        for i in range(n_loops):
+            val = slot_attr.data[i].value
+            if val == FaceColorManager.UNSET_SLOT:
+                continue
+            h_bytes = hash_attr.data[i].value
+            h_str = h_bytes.decode('utf-8', errors='replace').rstrip('\x00') if h_bytes else ""
+            if not h_str:
+                continue
+            if val not in slot_to_hashes:
+                slot_to_hashes[val] = set()
+            slot_to_hashes[val].add(h_str)
+
+        if not slot_to_hashes:
+            FaceColorManager._conflict_cache[ptr] = (loop_count, n_slots, False)
+            return False
+
+        for slot_idx, hashes in slot_to_hashes.items():
+            if len(hashes) > 1:
+                FaceColorManager._conflict_cache[ptr] = (loop_count, n_slots, True)
+                return True   # 同一 slot 索引对应多个不同颜色球 → 冲突
+            if slot_idx >= n_slots:
+                FaceColorManager._conflict_cache[ptr] = (loop_count, n_slots, True)
+                return True   # slot 索引超出当前槽位列表 → 冲突
+            h = next(iter(hashes))
+            if data.slots[slot_idx].ball_hash != h:
+                FaceColorManager._conflict_cache[ptr] = (loop_count, n_slots, True)
+                return True   # hash 与槽位引用的球不匹配 → 冲突
+
+        FaceColorManager._conflict_cache[ptr] = (loop_count, n_slots, False)
+        return False
+
+    @staticmethod
+    def clear_conflict_cache():
+        """清空冲突检测缓存（在可能改变 mesh 数据的 operator 执行后调用）"""
+        FaceColorManager._conflict_cache.clear()
 
 
 ##########################
@@ -451,7 +646,10 @@ class XQFA_UL_LayerVertexColorSlots(bpy.types.UIList):
             op = row.operator("xqfa.slot_clear_ball", text="", icon='X', emboss=False)
             op.slot_index = slot_idx
         else:
+            # 占位：使"新建"按钮对齐到有色球时色块的位置
+            row.label(text=" ")
             op = row.operator("xqfa.slot_new_ball", text="新建", icon='ADD')
+            row.operator(XQFA_OT_FaceColorSlotRemove.bl_idname, icon='REMOVE', text="")
             op.slot_index = slot_idx
 
     @staticmethod
@@ -589,10 +787,45 @@ class XQFA_OT_FaceColorSlotAdd(bpy.types.Operator):
     def execute(self, context):
         obj = context.active_object
         data = obj.layer_vertex_colors
-        data.slots.add()
+
+        # 新建全局颜色球
+        balls = context.scene.xqfa_color_balls
+        existing_names = {b.name for b in balls}
+        base = "Color"
+        if base not in existing_names:
+            name = base
+        else:
+            for i in range(1, 1000):
+                name = f"{base}.{i:03d}"
+                if name not in existing_names:
+                    break
+            else:
+                name = f"{base}.001"
+        ball = balls.add()
+        ball.name = name
+        ball.hash_val = uuid.uuid4().hex
+        ball.color = _hcl_to_rgba(
+            random.uniform(0, 360), random.uniform(30, 80), random.uniform(35, 75))
+
+        # 添加槽位并关联到新建的球
+        slot = data.slots.add()
+        slot.ball_hash = ball.hash_val
         data.active_index = len(data.slots) - 1
+        slot_idx = data.active_index
+
+        # 编辑模式且有选中面时直接指定
+        if obj.mode == 'EDIT':
+            # 检查是否有面选中
+            bm = bmesh.from_edit_mesh(obj.data)
+            has_selection = any(f.select for f in bm.faces)
+            if has_selection:
+                color = FaceColorManager.get_ball_color(ball.hash_val)
+                FaceColorManager.set_face_color_for_object(obj, slot_idx, color)
+
+        FaceColorManager.clear_conflict_cache()
         for area in context.screen.areas:
             area.tag_redraw()
+        self.report({'INFO'}, f"已添加槽位 '{ball.name}'")
         return {'FINISHED'}
 
 
@@ -663,30 +896,41 @@ class XQFA_OT_FaceColorSlotMove(bpy.types.Operator):
         data.slots.move(idx, target)
         data.active_index = target
 
-        # 同步网格中的 INT 索引：idx ↔ target
+        # 同步网格中的 INT 索引与 hash：idx ↔ target
         attr_slot = FaceColorManager.ATTR_SLOT
+        attr_hash = FaceColorManager.ATTR_HASH
         mesh = obj.data
         if obj.mode == 'EDIT':
             bm = bmesh.from_edit_mesh(mesh)
             slot_layer = bm.loops.layers.int.get(attr_slot)
+            hash_layer = bm.loops.layers.string.get(attr_hash)
             if slot_layer is not None:
                 for f in bm.faces:
                     for loop in f.loops:
                         val = loop[slot_layer]
                         if val == idx:
                             loop[slot_layer] = target
+                            if hash_layer is not None:
+                                loop[hash_layer] = data.slots[target].ball_hash.encode()
                         elif val == target:
                             loop[slot_layer] = idx
+                            if hash_layer is not None:
+                                loop[hash_layer] = data.slots[idx].ball_hash.encode()
                 bmesh.update_edit_mesh(mesh)
         else:
             slot_attr = mesh.attributes.get(attr_slot)
+            hash_attr = mesh.attributes.get(attr_hash)
             if slot_attr is not None:
                 for i in range(len(mesh.loops)):
                     val = slot_attr.data[i].value
                     if val == idx:
                         slot_attr.data[i].value = target
+                        if hash_attr is not None:
+                            hash_attr.data[i].value = data.slots[target].ball_hash.encode()
                     elif val == target:
                         slot_attr.data[i].value = idx
+                        if hash_attr is not None:
+                            hash_attr.data[i].value = data.slots[idx].ball_hash.encode()
 
         for area in context.screen.areas:
             area.tag_redraw()
@@ -749,6 +993,7 @@ class XQFA_OT_RebuildSlotData(bpy.types.Operator):
     def execute(self, context):
         obj = context.active_object
         needed = FaceColorManager.rebuild_from_mesh(obj)
+        FaceColorManager.clear_conflict_cache()
         for area in context.screen.areas:
             area.tag_redraw()
         self.report({'INFO'}, f"已重建槽位数据（共 {needed} 个槽位）")
@@ -911,14 +1156,17 @@ class XQFA_OT_SetByMaterial(bpy.types.Operator):
         bm = bmesh.from_edit_mesh(mesh)
         slot_layer = bm.loops.layers.int.get(FaceColorManager.ATTR_SLOT)
         color_layer = bm.loops.layers.color.get(FaceColorManager.ATTR_COLOR)
-        if slot_layer is None or color_layer is None:
-            slot_layer, color_layer = FaceColorManager.ensure_attrs_edit(bm)
+        hash_layer = bm.loops.layers.string.get(FaceColorManager.ATTR_HASH)
+        if slot_layer is None or color_layer is None or hash_layer is None:
+            slot_layer, color_layer, hash_layer = FaceColorManager.ensure_attrs_edit(bm)
 
         for f in bm.faces:
             idx = f.material_index
             if 0 <= idx < mat_count:
+                ball_hash = data.slots[idx].ball_hash
                 for loop in f.loops:
                     loop[slot_layer] = idx
+                    loop[hash_layer] = ball_hash.encode()
         bmesh.update_edit_mesh(mesh)
 
         if prev_mode != 'EDIT':
@@ -1024,14 +1272,17 @@ class XQFA_OT_SetByLooseParts(bpy.types.Operator):
         # 只写入槽索引
         slot_layer = bm.loops.layers.int.get(FaceColorManager.ATTR_SLOT)
         color_layer = bm.loops.layers.color.get(FaceColorManager.ATTR_COLOR)
-        if slot_layer is None or color_layer is None:
-            slot_layer, color_layer = FaceColorManager.ensure_attrs_edit(bm)
+        hash_layer = bm.loops.layers.string.get(FaceColorManager.ATTR_HASH)
+        if slot_layer is None or color_layer is None or hash_layer is None:
+            slot_layer, color_layer, hash_layer = FaceColorManager.ensure_attrs_edit(bm)
 
         for i, island in enumerate(islands):
             idx = i if i < slot_count - 1 else slot_count - 1
+            ball_hash = data.slots[idx].ball_hash
             for f in island:
                 for loop in f.loops:
                     loop[slot_layer] = idx
+                    loop[hash_layer] = ball_hash.encode()
 
         bmesh.update_edit_mesh(mesh)
 
@@ -1317,28 +1568,35 @@ class XQFA_OT_SlotClearBall(bpy.types.Operator):
         idx = self.slot_index if self.slot_index >= 0 else data.active_index
 
         data.slots[idx].ball_hash = ""
-        # 将所有该槽索引的面拐颜色重置为默认
+        # 将所有该槽索引的面拐颜色重置为默认，并清空 hash
         attr_color = FaceColorManager.ATTR_COLOR
         attr_slot = FaceColorManager.ATTR_SLOT
+        attr_hash = FaceColorManager.ATTR_HASH
         mesh = obj.data
 
         if obj.mode == 'EDIT':
             bm = bmesh.from_edit_mesh(mesh)
             slot_layer = bm.loops.layers.int.get(attr_slot)
             color_layer = bm.loops.layers.color.get(attr_color)
+            hash_layer = bm.loops.layers.string.get(attr_hash)
             if slot_layer is not None and color_layer is not None:
                 for f in bm.faces:
                     for loop in f.loops:
                         if loop[slot_layer] == idx:
                             loop[color_layer] = FaceColorManager.DEFAULT_COLOR
+                            if hash_layer is not None:
+                                loop[hash_layer] = b""
                 bmesh.update_edit_mesh(mesh)
         else:
             slot_attr = mesh.attributes.get(attr_slot)
             color_attr = mesh.attributes.get(attr_color)
+            hash_attr = mesh.attributes.get(attr_hash)
             if slot_attr is not None and color_attr is not None:
                 for i in range(len(mesh.loops)):
                     if slot_attr.data[i].value == idx:
                         color_attr.data[i].color = FaceColorManager.DEFAULT_COLOR
+                        if hash_attr is not None:
+                            hash_attr.data[i].value = b""
 
         for area in context.screen.areas:
             area.tag_redraw()
@@ -1460,6 +1718,84 @@ class XQFA_OT_FaceColorDeselect(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class XQFA_OT_ToggleVertexColorView(bpy.types.Operator):
+    """切换顶点色视图显示"""
+    bl_idname = "xqfa.toggle_vertex_color_view"
+    bl_label = "显示/隐藏顶点色"
+    bl_description = "在视口中切换显示/隐藏 layer_vertex_color 顶点色"
+    bl_options = {'REGISTER'}
+
+    # 存储每个区域的上一个着色状态：{area_ptr: (type, light, color_type, active_color_name)}
+    _saved_states = {}
+    _toggle_guard = False
+
+    @classmethod
+    def is_active(cls, context):
+        """检查当前是否处于顶点色显示模式"""
+        return getattr(context.scene, 'xqfa_vertex_color_show', False)
+
+    def execute(self, context):
+        if XQFA_OT_ToggleVertexColorView._toggle_guard:
+            return {'CANCELLED'}
+        XQFA_OT_ToggleVertexColorView._toggle_guard = True
+        try:
+            return self._execute_impl(context)
+        finally:
+            XQFA_OT_ToggleVertexColorView._toggle_guard = False
+
+    def _execute_impl(self, context):
+        area = context.area
+        space = context.space_data
+        if area is None or space is None:
+            return {'CANCELLED'}
+        obj = context.active_object
+        shading = space.shading
+        ptr = area.as_pointer()
+
+        if ptr in self._saved_states:
+            # ---- 恢复 ----
+            prev_type, prev_light, prev_color_type, prev_active_color = self._saved_states.pop(ptr)
+            shading.type = prev_type
+            if hasattr(shading, 'light'):
+                shading.light = prev_light
+            if hasattr(shading, 'color_type'):
+                shading.color_type = prev_color_type
+            if obj and obj.type == 'MESH' and prev_active_color:
+                attr = obj.data.attributes.get(prev_active_color)
+                if attr:
+                    obj.data.attributes.active_color = attr
+            context.scene.xqfa_vertex_color_show = False
+        else:
+            # ---- 保存当前状态 ----
+            prev_active_color = ""
+            if obj and obj.type == 'MESH':
+                active = obj.data.attributes.active_color
+                if active:
+                    prev_active_color = active.name
+            self._saved_states[ptr] = (
+                shading.type,
+                getattr(shading, 'light', 'FLAT'),
+                getattr(shading, 'color_type', 'MATERIAL'),
+                prev_active_color,
+            )
+            shading.type = 'SOLID'
+            if hasattr(shading, 'light'):
+                shading.light = 'FLAT'
+            if hasattr(shading, 'color_type'):
+                shading.color_type = 'VERTEX'
+            if obj and obj.type == 'MESH':
+                color_attr = obj.data.attributes.get(FaceColorManager.ATTR_COLOR)
+                if color_attr:
+                    obj.data.attributes.active_color = color_attr
+                else:
+                    self.report({'WARNING'}, "该物体没有 layer_vertex_color 属性")
+            context.scene.xqfa_vertex_color_show = True
+
+        for area_iter in context.screen.areas:
+            area_iter.tag_redraw()
+        return {'FINISHED'}
+
+
 ##########################
 # Panel
 ##########################
@@ -1486,6 +1822,14 @@ class XQFA_PT_LayerVertexColors(bpy.types.Panel):
         slots = data.slots
         active_idx = data.active_index
 
+        # ---- 冲突警告 ----
+        if FaceColorManager.has_slot_conflict(obj):
+            row = layout.row(align=True)
+            row.alert = True
+            op = row.operator("xqfa.rebuild_slot_data", text="槽位存在冲突，点击重建", icon='ERROR')
+            row.alert = False
+            layout.separator()
+
         # ---- 槽位列表 ----
         row = layout.row()
         row.template_list(
@@ -1505,6 +1849,9 @@ class XQFA_PT_LayerVertexColors(bpy.types.Panel):
         op.direction = 'UP'
         op = col.operator(XQFA_OT_FaceColorSlotMove.bl_idname, text="", icon='TRIA_DOWN')
         op.direction = 'DOWN'
+        col.separator()
+        # 眼睛按钮：切换视图顶点色显示
+        col.prop(context.scene, "xqfa_vertex_color_show", text="", icon='HIDE_OFF', toggle=True)
 
         # ---- 面操作（仅编辑模式） ----
         if obj.mode == 'EDIT' and len(slots) > 0 and 0 <= active_idx < len(slots):
@@ -1548,8 +1895,15 @@ classes = (
     XQFA_OT_FaceColorUnassign,
     XQFA_OT_FaceColorSelect,
     XQFA_OT_FaceColorDeselect,
+    XQFA_OT_ToggleVertexColorView,
     XQFA_PT_LayerVertexColors,
 )
+
+
+def _toggle_vcolor_cb(self, ctx):
+    """BoolProperty 的 update 回调：用户点击 col.prop 时触发 operator"""
+    if not XQFA_OT_ToggleVertexColorView._toggle_guard:
+        bpy.ops.xqfa.toggle_vertex_color_view()
 
 
 def register():
@@ -1559,6 +1913,10 @@ def register():
     bpy.types.Scene.xqfa_color_balls = CollectionProperty(type=FaceColorBall)
     bpy.types.Scene.xqfa_color_balls_active_index = IntProperty(default=-1, min=-1)
     bpy.types.Object.layer_vertex_colors = PointerProperty(type=LayerVertexColorData)
+    bpy.types.Scene.xqfa_vertex_color_show = BoolProperty(
+        default=False,
+        update=lambda self, ctx: _toggle_vcolor_cb(self, ctx),
+    )
 
 
 def unregister():
@@ -1568,3 +1926,4 @@ def unregister():
     del bpy.types.Scene.xqfa_color_balls
     del bpy.types.Scene.xqfa_color_balls_active_index
     del bpy.types.Object.layer_vertex_colors
+    del bpy.types.Scene.xqfa_vertex_color_show
