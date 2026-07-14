@@ -1,6 +1,6 @@
 # type: ignore
 import bpy
-from bpy.props import IntProperty
+from bpy.props import IntProperty, StringProperty, FloatVectorProperty
 import numpy as np
 
 class XQFA_OT_detect_normal_format(bpy.types.Operator):
@@ -238,6 +238,146 @@ class XQFA_OT_viewer_to_material(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class XQFA_OT_create_packed_image(bpy.types.Operator):
+    """创建指定颜色的纯色图片并打包到当前材质"""
+    bl_idname = "xqfa.create_packed_image"
+    bl_label = "新建打包图像"
+    bl_description = "创建纯色图片，打包到 .blend 并添加到当前材质的图像纹理节点"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    image_name: StringProperty(
+        name="图像名称",
+        default="NewPacked",
+        description="新建图像的名称",
+    )
+
+    width: IntProperty(
+        name="宽度",
+        default=1024,
+        min=4,
+        max=16384,
+        description="图像宽度（像素）",
+    )
+
+    height: IntProperty(
+        name="高度",
+        default=1024,
+        min=4,
+        max=16384,
+        description="图像高度（像素）",
+    )
+
+    default_color: FloatVectorProperty(
+        name="默认颜色",
+        subtype='COLOR',
+        size=4,
+        default=(0.5, 0.5, 0.5, 1.0),
+        min=0.0,
+        max=1.0,
+        description="填充图像的 RGBA 默认颜色",
+    )
+
+    @classmethod
+    def poll(cls, context):
+        return (context.active_object is not None and
+                context.active_object.active_material is not None)
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+        col.prop(self, 'image_name')
+        col.prop(self, 'width')
+        col.prop(self, 'height')
+        col.prop(self, 'default_color')
+
+    def execute(self, context):
+        # 1. 检查活动材质
+        mat = context.active_object.active_material
+        if not mat.use_nodes:
+            mat.use_nodes = True
+
+        # 2. 自动去重图像名称
+        name = self.image_name
+        if not name:
+            name = "NewPacked"
+        base_name = name
+        idx = 1
+        while bpy.data.images.get(name):
+            name = f"{base_name}.{idx:03d}"
+            idx += 1
+
+        # 3. 创建图像并填充颜色
+        new_img = bpy.data.images.new(
+            name=name,
+            width=self.width,
+            height=self.height,
+            alpha=True,
+        )
+
+        # 用指定颜色填充全部像素
+        w, h = self.width, self.height
+        pixels = np.empty(w * h * 4, dtype=np.float32)
+        r, g, b, a = self.default_color
+        pixels[0::4] = r
+        pixels[1::4] = g
+        pixels[2::4] = b
+        pixels[3::4] = a
+        new_img.pixels.foreach_set(pixels)
+
+        # 4. 打包图像并设置 alpha 模式
+        new_img.alpha_mode = 'CHANNEL_PACKED'
+        new_img.pack()
+
+        # 5. 延迟添加节点：等对话框关闭后 cursor_location 才会更新
+        img_name = name
+
+        def _deferred_add_node():
+            for area in bpy.context.screen.areas:
+                if area.type != 'NODE_EDITOR':
+                    continue
+                node_space = None
+                node_region = None
+                for space in area.spaces:
+                    if space.type == 'NODE_EDITOR':
+                        node_space = space
+                for region in area.regions:
+                    if region.type == 'WINDOW':
+                        node_region = region
+                if not node_space or not node_region:
+                    continue
+
+                cur_mat = bpy.context.active_object.active_material
+                if not cur_mat or not cur_mat.use_nodes:
+                    return None
+
+                cur_mat_nodes = cur_mat.node_tree.nodes
+                tex_node = cur_mat_nodes.new('ShaderNodeTexImage')
+                tex_node.image = bpy.data.images.get(img_name)
+                tex_node.location = node_space.cursor_location
+
+                for n in cur_mat_nodes:
+                    n.select = False
+                tex_node.select = True
+                cur_mat_nodes.active = tex_node
+
+                with bpy.context.temp_override(
+                    area=area, region=node_region, space_data=node_space
+                ):
+                    bpy.ops.node.translate_attach('INVOKE_DEFAULT')
+                return None
+            return None  # 取消注册计时器
+
+        bpy.app.timers.register(_deferred_add_node, first_interval=0.05)
+
+        color_hex = "#{:02x}{:02x}{:02x}".format(
+            int(r * 255), int(g * 255), int(b * 255))
+        self.report({'INFO'}, f"已创建打包图像 '{name}' ({w}x{h}, 颜色: {color_hex})")
+        return {'FINISHED'}
+
+
 class XQFA_PT_material_tools(bpy.types.Panel):
     """在节点编辑器侧边栏中添加面板"""
     bl_label = "XQFA 材质工具"
@@ -252,11 +392,13 @@ class XQFA_PT_material_tools(bpy.types.Panel):
         col.operator(XQFA_OT_detect_normal_format.bl_idname, icon='NODE_SEL')
         col.operator(XQFA_OT_ensure_material.bl_idname, icon='MATERIAL_DATA')
         col.operator(XQFA_OT_viewer_to_material.bl_idname, icon='IMAGE_DATA')
+        col.operator(XQFA_OT_create_packed_image.bl_idname, icon='ADD')
 
 classes = (
     XQFA_OT_detect_normal_format,
     XQFA_OT_ensure_material,
     XQFA_OT_viewer_to_material,
+    XQFA_OT_create_packed_image,
     XQFA_PT_material_tools,
 )
 
