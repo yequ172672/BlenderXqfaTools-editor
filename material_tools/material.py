@@ -161,12 +161,11 @@ class XQFA_OT_viewer_to_material(bpy.types.Operator):
     def execute(self, context):
         scene = context.scene
 
-        # 1. 检查合成器节点树
-        if not scene.use_nodes or not scene.node_tree:
+        # 1. 检查合成器节点树（Blender 5.0+ 用 compositing_node_group，旧版用 node_tree）
+        node_tree = getattr(scene, 'compositing_node_group', None) or getattr(scene, 'node_tree', None)
+        if not scene.use_nodes or not node_tree:
             self.report({'ERROR'}, "场景未启用合成器节点")
             return {'CANCELLED'}
-
-        node_tree = scene.node_tree
         viewer_nodes = [n for n in node_tree.nodes if n.type == 'VIEWER']
         if not viewer_nodes:
             self.report({'ERROR'}, "合成器中没有 Viewer Node")

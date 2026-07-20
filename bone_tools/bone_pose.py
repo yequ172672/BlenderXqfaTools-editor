@@ -8,6 +8,18 @@ from bpy_extras.io_utils import ImportHelper
 
 ########################## Divider ##########################
 
+def _select_pose_bone(pose_bone, select=True):
+    """兼容 Blender 5.2+ 的骨骼选择函数。
+    
+    Blender 5.2 移除了 Bone.select 属性，改为使用 PoseBone.select。
+    """
+    if bpy.app.version >= (5, 2, 0):
+        pose_bone.select = select
+    else:
+        pose_bone.bone.select = select
+
+########################## Divider ##########################
+
 # 骨骼变换数据剪贴板（模块级，无需注册）
 # 形如 {'POSITION': Vector, 'EULER': Euler, 'QUATERNION': Quaternion, 'MATRIX': Matrix, 'MATRIX_BASIS': Matrix}
 _bone_pose_clipboard = {}
@@ -438,7 +450,7 @@ class O_InCSVSel(bpy.types.Operator, ImportHelper):
                 for bone_name in bone_sel:
                     # 使用更可靠的选择方式
                     if bone_name in context.active_object.pose.bones:
-                        context.active_object.pose.bones[bone_name].bone.select = True
+                        _select_pose_bone(context.active_object.pose.bones[bone_name])
                         selected_count += 1
 
                 self.report({'INFO'}, f"已选择 {selected_count}/{len(bone_sel)} 个骨骼")
@@ -577,7 +589,7 @@ class O_BonePoseMoveToActive(bpy.types.Operator):
             bpy.ops.pose.select_all(action='DESELECT')
             
             # 选择当前骨骼
-            pose_bone.bone.select = True
+            _select_pose_bone(pose_bone)
             
             # 使用bpy.ops.transform.translate移动骨骼
             # 设置变换方向为全局坐标系
@@ -607,8 +619,8 @@ class O_BonePoseMoveToActive(bpy.types.Operator):
         # 重新选择原始的姿态骨骼
         bpy.ops.pose.select_all(action='DESELECT')
         for pose_bone in selected_pose_bones:
-            pose_bone.bone.select = True
-        active_pose_bone.bone.select = True
+            _select_pose_bone(pose_bone)
+        _select_pose_bone(active_pose_bone)
         
         # 更新场景
         context.view_layer.update()
@@ -678,7 +690,7 @@ class O_BonePoseRotateToActive(bpy.types.Operator):
 
         # 恢复原始选择状态
         bpy.ops.pose.select_all(action='DESELECT')
-        pose_bone_A.bone.select = True
+        _select_pose_bone(pose_bone_A)
         context.view_layer.objects.active = pose_bone_B.id_data
         pose_bone_B.id_data.data.bones.active = pose_bone_B.bone
         # 恢复原始活动骨架
@@ -781,6 +793,7 @@ class O_BonePoseXYZRotateToActive(bpy.types.Operator):
         bpy.ops.pose.select_all(action='DESELECT')
         context.view_layer.objects.active = pose_bone_A.id_data
         pose_bone_A.id_data.data.bones.active = pose_bone_A.bone
+        _select_pose_bone(pose_bone_A)  # Blender 5.2+ 需显式选择
 
         # 使用bpy.ops.transform.rotate执行旋转
         bpy.ops.transform.rotate(
@@ -797,7 +810,7 @@ class O_BonePoseXYZRotateToActive(bpy.types.Operator):
 
         # 恢复原始选择状态
         bpy.ops.pose.select_all(action='DESELECT')
-        pose_bone_A.bone.select = True
+        _select_pose_bone(pose_bone_A)
         context.view_layer.objects.active = pose_bone_B.id_data
         pose_bone_B.id_data.data.bones.active = pose_bone_B.bone
         # 恢复原始活动骨架
@@ -878,6 +891,7 @@ class O_BonePoseXYZResizeToActive(bpy.types.Operator):
         bpy.ops.pose.select_all(action='DESELECT')
         context.view_layer.objects.active = pose_bone_A.id_data
         pose_bone_A.id_data.data.bones.active = pose_bone_A.bone
+        _select_pose_bone(pose_bone_A)  # Blender 5.2+ 需显式选择
 
         # 8. 根据选择的坐标系执行缩放操作
         resize_orient = props.resize_orient
@@ -911,7 +925,7 @@ class O_BonePoseXYZResizeToActive(bpy.types.Operator):
 
         # 9. 恢复原始选择状态
         bpy.ops.pose.select_all(action='DESELECT')
-        pose_bone_A.bone.select = True
+        _select_pose_bone(pose_bone_A)
         context.view_layer.objects.active = pose_bone_B.id_data
         pose_bone_B.id_data.data.bones.active = pose_bone_B.bone
         # 恢复原始活动骨架

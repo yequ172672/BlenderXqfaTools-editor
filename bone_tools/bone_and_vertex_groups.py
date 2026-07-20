@@ -109,13 +109,14 @@ class O_SelectWeightedBones(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode='OBJECT')
         bpy.context.view_layer.objects.active = SourceArmature
-        bpy.ops.object.mode_set(mode='POSE')
+        bpy.ops.object.mode_set(mode='EDIT')
         selected_count = 0
-        for bone in SourceArmature.pose.bones:
-            bone.bone.select = False
+        for bone in SourceArmature.data.edit_bones:
+            bone.select = False
             if bone.name in vertex_group_info and vertex_group_info[bone.name]:
-                bone.bone.select = True
+                bone.select = True
                 selected_count += 1
+        bpy.ops.object.mode_set(mode='POSE')
 
         self.report({'INFO'}, f"已选择 {selected_count} 个有权重骨骼")
         return {'FINISHED'}
@@ -147,13 +148,14 @@ class O_SelectUnweightedBones(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode='OBJECT')
         bpy.context.view_layer.objects.active = SourceArmature
-        bpy.ops.object.mode_set(mode='POSE')
+        bpy.ops.object.mode_set(mode='EDIT')
         selected_count = 0
-        for bone in SourceArmature.pose.bones:
-            bone.bone.select = False
+        for bone in SourceArmature.data.edit_bones:
+            bone.select = False
             if bone.name not in vertex_group_info or not vertex_group_info[bone.name]:
-                bone.bone.select = True
+                bone.select = True
                 selected_count += 1
+        bpy.ops.object.mode_set(mode='POSE')
 
         self.report({'INFO'}, f"已选择 {selected_count} 个无权重骨骼")
         return {'FINISHED'}
