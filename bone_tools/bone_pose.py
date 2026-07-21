@@ -664,8 +664,9 @@ class O_BonePoseRotateToActive(bpy.types.Operator):
         pose_bone_A = selected_non_active_bones[0] # 选中骨骼 A（被旋转）
         pose_bone_B = context.active_pose_bone       # 活动骨骼 B（目标）
 
-        # 保存当前活动骨架
+        # 保存当前活动骨架和选择状态
         original_active = context.view_layer.objects.active
+        original_selected_objects = context.selected_objects.copy()
 
         # 必须设置pose_bone_A骨架骨骼为活动对象，不然无法应用约束
         bpy.ops.pose.select_all(action='DESELECT')
@@ -689,12 +690,16 @@ class O_BonePoseRotateToActive(bpy.types.Operator):
             action_text = "已添加"
 
         # 恢复原始选择状态
+        context.view_layer.objects.active = original_active
+        for obj in context.selected_objects:
+            obj.select_set(False)
+        for obj in original_selected_objects:
+            obj.select_set(True)
         bpy.ops.pose.select_all(action='DESELECT')
+        _select_pose_bone(pose_bone_B)
         _select_pose_bone(pose_bone_A)
         context.view_layer.objects.active = pose_bone_B.id_data
         pose_bone_B.id_data.data.bones.active = pose_bone_B.bone
-        # 恢复原始活动骨架
-        context.view_layer.objects.active = original_active
         context.view_layer.update()
         self.report({'INFO'}, f"选中骨骼 '{pose_bone_A.name}' {action_text}阻尼追踪约束指向 '{pose_bone_B.name}'")
         return {'FINISHED'}
@@ -786,8 +791,9 @@ class O_BonePoseXYZRotateToActive(bpy.types.Operator):
 
         print(f"计算的角度: {math.degrees(angle):.2f}°")
 
-        # 保存当前活动骨架
+        # 保存当前活动骨架和选择状态
         original_active = context.view_layer.objects.active
+        original_selected_objects = context.selected_objects.copy()
 
         # 设置正确的活动对象和骨骼选择（选中骨骼A自身）
         bpy.ops.pose.select_all(action='DESELECT')
@@ -809,12 +815,16 @@ class O_BonePoseXYZRotateToActive(bpy.types.Operator):
         )
 
         # 恢复原始选择状态
+        context.view_layer.objects.active = original_active
+        for obj in context.selected_objects:
+            obj.select_set(False)
+        for obj in original_selected_objects:
+            obj.select_set(True)
         bpy.ops.pose.select_all(action='DESELECT')
+        _select_pose_bone(pose_bone_B)
         _select_pose_bone(pose_bone_A)
         context.view_layer.objects.active = pose_bone_B.id_data
         pose_bone_B.id_data.data.bones.active = pose_bone_B.bone
-        # 恢复原始活动骨架
-        context.view_layer.objects.active = original_active
         context.view_layer.update()
         self.report({'INFO'}, f"选中骨骼 '{pose_bone_A.name}' 绕世界{axis_name}轴旋转 {math.degrees(angle):.2f}°")
         return {'FINISHED'}
@@ -884,8 +894,9 @@ class O_BonePoseXYZResizeToActive(bpy.types.Operator):
             self.report({'WARNING'}, "X, Y, Z 轴分量至少要选择一个才能缩放")
             return {'CANCELLED'}
 
-        # 6. 保存当前活动骨架
+        # 6. 保存当前活动骨架和选择状态
         original_active = context.view_layer.objects.active
+        original_selected_objects = context.selected_objects.copy()
 
         # 7. 设置正确的活动对象和骨骼选择（选中骨骼A自身）
         bpy.ops.pose.select_all(action='DESELECT')
@@ -924,12 +935,16 @@ class O_BonePoseXYZResizeToActive(bpy.types.Operator):
             )
 
         # 9. 恢复原始选择状态
+        context.view_layer.objects.active = original_active
+        for obj in context.selected_objects:
+            obj.select_set(False)
+        for obj in original_selected_objects:
+            obj.select_set(True)
         bpy.ops.pose.select_all(action='DESELECT')
+        _select_pose_bone(pose_bone_B)
         _select_pose_bone(pose_bone_A)
         context.view_layer.objects.active = pose_bone_B.id_data
         pose_bone_B.id_data.data.bones.active = pose_bone_B.bone
-        # 恢复原始活动骨架
-        context.view_layer.objects.active = original_active
         context.view_layer.update()
 
         # 报告操作结果
@@ -1221,7 +1236,7 @@ class P_BonePose(bpy.types.Panel):
             active_pose_bone = context.active_pose_bone.name if context.active_pose_bone else "无活动骨骼"
             row.label(text=f"{active_object}: {active_pose_bone}")
             row.prop(props, "pose_matrix", text="", icon='OBJECT_DATA', toggle=True)
-            if props.pose_matrix:
+            if props.pose_matrix and context.active_pose_bone:
                 split = layout.split(align=True)
                 col = split.column(align=True)
                 row = col.row(align=True)
