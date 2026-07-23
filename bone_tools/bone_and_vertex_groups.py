@@ -1,6 +1,9 @@
 # type: ignore
 import bpy 
 import re
+import os
+import csv, json
+from bpy_extras.io_utils import ImportHelper
 
 ########################## Divider ##########################
 
@@ -175,40 +178,63 @@ def get_armature_objects(context, armature):
                     break # 找到一个匹配的修改器即可
     return armature_objs
 
+def _vg_vert_indices(vg, mesh):
+    """获取顶点组中的顶点索引列表，兼容 Blender 5.2+（VertexGroup.vertices 被移除）"""
+    if hasattr(vg, 'vertices'):
+        return list(vg.vertices)
+    # 兼容 Blender 5.2+：手动构建
+    idx = vg.index
+    return [v.index for v in mesh.vertices for g in v.groups if g.group == idx]
+
 def merge_vertex_groups(obj, source_bone, target_bone):
     """将源顶点组的权重合并到目标顶点组"""
     if source_bone not in obj.vertex_groups or target_bone not in obj.vertex_groups:
         return
     
-    # 获取网格数据
     mesh = obj.data
     vg_source = obj.vertex_groups[source_bone]
     vg_target = obj.vertex_groups[target_bone]
+    src_idx = vg_source.index
+    tgt_idx = vg_target.index
     
-    # 为每个顶点合并权重
-    for v in mesh.vertices:
-        try:
-            # 获取源权重
-            for g in v.groups:
-                if g.group == vg_source.index:
-                    source_weight = g.weight
-                    break
-            else:
-                continue
-                
-            # 获取目标权重
-            for g in v.groups:
-                if g.group == vg_target.index:
-                    target_weight = g.weight
-                    # 合并权重（简单相加）
-                    g.weight = source_weight + target_weight
-                    break
-            else:
-                # 如果目标顶点组没有权重，则添加
-                vg_target.add([v.index], source_weight, 'REPLACE')
-                
-        except Exception as e:
-            print(f"Error merging vertex groups for {obj.name}: {e}")
+    # 只遍历源顶点组中的顶点，而非全部顶点
+    src_verts = _vg_vert_indices(vg_source, mesh)
+    if not src_verts:
+        return
+    
+    # 预构建目标顶点组的顶点集合，用于快速判断
+    tgt_vert_set = set(_vg_vert_indices(vg_target, mesh))
+    
+    replace_list = []  # (顶点索引, 叠加后权重) — 已在target中
+    new_list = []      # (顶点索引, 源权重) — 不在target中
+    
+    for vi in src_verts:
+        v = mesh.vertices[vi]
+        src_w = None
+        tgt_w = None
+        # 单次遍历同时查找源权重和目标权重
+        for g in v.groups:
+            if g.group == src_idx:
+                src_w = g.weight
+            elif g.group == tgt_idx:
+                tgt_w = g.weight
+            if src_w is not None and tgt_w is not None:
+                break
+        if src_w is None:
+            continue
+        
+        if tgt_w is not None:
+            replace_list.append((vi, src_w + tgt_w))
+        else:
+            new_list.append((vi, src_w))
+    
+    # 批量更新已有顶点的权重
+    for vi, w in replace_list:
+        vg_target.add([vi], w, 'REPLACE')
+    
+    # 批量添加新顶点
+    for vi, w in new_list:
+        vg_target.add([vi], w, 'REPLACE')
 
 class BONE_OT_merge_to_parent(bpy.types.Operator):
     """将选择的骨骼合并到它们的父级骨骼，影响顶点组"""
@@ -228,48 +254,50 @@ class BONE_OT_merge_to_parent(bpy.types.Operator):
         selected_bones = context.selected_pose_bones
         armature_objs = get_armature_objects(context, armature)
         
-        # 按层级从高到低排序选择的骨骼
+        # 按层级从高到低排序选择的骨骼，收集合并对
         sorted_bones = sorted(selected_bones, key=lambda b: len(b.parent_recursive), reverse=True)
-        
+        merge_pairs = []  # (bone_name, parent_name)
         for bone in sorted_bones:
-            bone_name = bone.name
-            parent_bone = bone.parent
-            
-            if not parent_bone:
-                self.report({'WARNING'}, f"骨骼 {bone_name} 没有父级，跳过")
+            if bone.parent:
+                merge_pairs.append((bone.name, bone.parent.name))
+            else:
+                self.report({'WARNING'}, f"骨骼 {bone.name} 没有父级，跳过")
+        
+        if not merge_pairs:
+            return {'CANCELLED'}
+        
+        # 一次性切到 EDIT 模式处理所有骨骼关系
+        bpy.ops.object.mode_set(mode='EDIT')
+        bones_to_remove = []
+        
+        for bone_name, parent_name in merge_pairs:
+            edit_bone = armature.data.edit_bones.get(bone_name)
+            if not edit_bone:
                 continue
-                
-            parent_name = parent_bone.name
-            
-            # 处理子骨骼的父级关系
-            bpy.ops.object.mode_set(mode='EDIT')
-            edit_bone = armature.data.edit_bones[bone_name]
             
             # 将所有子骨骼的父级设置为当前骨骼的父级
-            for child in edit_bone.children:
-                child.parent = armature.data.edit_bones[parent_name]
-
+            parent_eb = armature.data.edit_bones.get(parent_name)
+            if parent_eb:
+                for child in edit_bone.children:
+                    child.parent = parent_eb
+            
             # 处理顶点组
             for obj in armature_objs:
-                # 确保源顶点组存在
                 if bone_name not in obj.vertex_groups:
                     obj.vertex_groups.new(name=bone_name)
-                
-                # 确保目标顶点组存在
                 if parent_name not in obj.vertex_groups:
                     obj.vertex_groups.new(name=parent_name)
-                
-                # 合并顶点组
                 merge_vertex_groups(obj, bone_name, parent_name)
-                    
-                # 删除源顶点组
                 if bone_name in obj.vertex_groups:
                     obj.vertex_groups.remove(obj.vertex_groups[bone_name])
             
-            # 删除骨骼
-            armature.data.edit_bones.remove(edit_bone)
-            bpy.ops.object.mode_set(mode='POSE')
+            bones_to_remove.append(edit_bone)
         
+        # 批量删除骨骼
+        for eb in bones_to_remove:
+            armature.data.edit_bones.remove(eb)
+        
+        bpy.ops.object.mode_set(mode='POSE')
         return {'FINISHED'}
 
 class BONE_OT_merge_to_active(bpy.types.Operator):
@@ -298,45 +326,47 @@ class BONE_OT_merge_to_active(bpy.types.Operator):
             self.report({'ERROR'}, "活动骨骼必须在选择的骨骼中")
             return {'CANCELLED'}
             
-        # 从选中的骨骼中移除活动骨骼
-        bones_to_merge = [b for b in selected_bones if b != active_bone]
+        # 从选中的骨骼中移除活动骨骼，收集合并对
         active_bone_name = active_bone.name
-        
-        # 按层级从高到低排序选择的骨骼
+        bones_to_merge = [b for b in selected_bones if b != active_bone]
         sorted_bones = sorted(bones_to_merge, key=lambda b: len(b.parent_recursive), reverse=True)
+        
+        if not sorted_bones:
+            return {'CANCELLED'}
+        
+        # 一次性切到 EDIT 模式处理所有骨骼关系
+        bpy.ops.object.mode_set(mode='EDIT')
+        bones_to_remove = []
         
         for bone in sorted_bones:
             bone_name = bone.name
-            
-            # 处理子骨骼的父级关系
-            bpy.ops.object.mode_set(mode='EDIT')
-            edit_bone = armature.data.edit_bones[bone_name]
+            edit_bone = armature.data.edit_bones.get(bone_name)
+            if not edit_bone:
+                continue
             
             # 将所有子骨骼的父级设置为活动骨骼
-            for child in edit_bone.children:
-                child.parent = armature.data.edit_bones[active_bone_name]
+            active_eb = armature.data.edit_bones.get(active_bone_name)
+            if active_eb:
+                for child in edit_bone.children:
+                    child.parent = active_eb
             
             # 处理顶点组
             for obj in armature_objs:
-                # 确保源顶点组存在
                 if bone_name not in obj.vertex_groups:
                     obj.vertex_groups.new(name=bone_name)
-                
-                # 确保目标顶点组存在
                 if active_bone_name not in obj.vertex_groups:
                     obj.vertex_groups.new(name=active_bone_name)
-                
-                # 合并顶点组
                 merge_vertex_groups(obj, bone_name, active_bone_name)
-                    
-                # 删除源顶点组
                 if bone_name in obj.vertex_groups:
                     obj.vertex_groups.remove(obj.vertex_groups[bone_name])
             
-            # 删除骨骼
-            armature.data.edit_bones.remove(edit_bone)
-            bpy.ops.object.mode_set(mode='POSE')
+            bones_to_remove.append(edit_bone)
         
+        # 批量删除骨骼
+        for eb in bones_to_remove:
+            armature.data.edit_bones.remove(eb)
+        
+        bpy.ops.object.mode_set(mode='POSE')
         return {'FINISHED'}
 
 
@@ -489,6 +519,242 @@ class VG_OT_delete_corresponding(bpy.types.Operator):
 
 ########################## Divider ##########################
 
+class O_ImportCSV(bpy.types.Operator, ImportHelper):
+    bl_idname = "xqfa.csv_import"
+    bl_label = "导入CSV"
+    bl_description = ""
+    filename_ext = ".csv"
+    filter_glob: bpy.props.StringProperty(
+        default="*.csv",
+        options={'HIDDEN'},
+    )
+
+    def execute(self, context):
+        csv_file = self.filepath
+
+        if not csv_file or not os.path.exists(csv_file):
+            self.report({'ERROR'}, "请选择有效的CSV文件")
+            return {'CANCELLED'}
+
+        encodings = ['utf-8', 'gbk', 'utf-16']
+        
+        for encoding in encodings:
+            try:
+                with open(csv_file, 'r', newline='', encoding=encoding) as file:
+                    reader = csv.reader(file)
+                    csv_data = list(reader)
+                    context.scene.xbone_csv_data = json.dumps(csv_data)
+                
+                self.report({'INFO'}, f"CSV文件已导入({encoding}): {csv_file}")
+                return {'FINISHED'}
+            except UnicodeDecodeError:
+                continue
+            except Exception as e:
+                self.report({'ERROR'}, f"导入CSV文件时出现错误: {e}")
+                return {'CANCELLED'}
+        
+        self.report({'ERROR'}, "无法解码CSV文件，请尝试转换为UTF-8编码")
+        return {'CANCELLED'}
+
+
+class O_BoneSimpleMapping(bpy.types.Operator):
+    bl_idname = "xqfa.simple_mapping"
+    bl_label = "简化骨骼"
+    bl_description = "根据CSV映射表保留主骨骼、处理合并逻辑并清理多余骨骼"
+
+    def execute(self, context):
+        scene = context.scene
+        # 1. 安全检查
+        if not scene.xbone_csv_data:
+            self.report({'ERROR'}, "请先导入CSV文件")
+            return {'CANCELLED'}
+        
+        target_obj = context.active_object
+        if not target_obj or target_obj.type != 'ARMATURE':
+            self.report({'ERROR'}, "请先选中一个骨架对象")
+            return {'CANCELLED'}
+
+        try:
+            csv_data = json.loads(scene.xbone_csv_data)
+        except Exception as e:
+            self.report({'ERROR'}, f"解析CSV数据失败: {e}")
+            return {'CANCELLED'}
+
+        # 2. 提取配置
+        cols = {
+            'main': scene.simple_main_column,
+            'save': scene.simple_save_column,
+            'active': scene.simple_active_column,
+            'to_active': scene.simple_toactive_column
+        }
+        
+        bone_main = set()
+        bone_save = set()
+        bone_mapping = {}
+
+        # 3. 单次遍历解析 CSV 数据
+        for row in csv_data[1:]:
+            row_len = len(row)
+            
+            for key, attr in [('main', bone_main), ('save', bone_save)]:
+                idx = cols[key]
+                if row_len > idx:
+                    val = str(row[idx])
+                    if val and val != "None":
+                        attr.add(val)
+
+            m_idx, t_idx = cols['active'], cols['to_active']
+            if row_len > max(m_idx, t_idx):
+                key_bone, val_bone = str(row[t_idx]), str(row[m_idx])
+                if all([key_bone, val_bone, key_bone != "None", val_bone != "None"]):
+                    bone_mapping[key_bone] = val_bone
+
+        # 4. 分配集合与颜色（预过滤不存在的骨骼名）
+        pose_bone_names = set(target_obj.pose.bones.keys())
+        valid_main = bone_main & pose_bone_names
+        valid_save = bone_save & pose_bone_names
+        
+        def assign_bones_to_collection(armature, bone_names, coll_name, palette):
+            if not bone_names: return
+            coll = armature.data.collections.get(coll_name) or armature.data.collections.new(coll_name)
+            for name in bone_names:
+                p_bone = armature.pose.bones.get(name)
+                if p_bone:
+                    coll.assign(p_bone.bone)
+                    p_bone.bone.color.palette = palette
+
+        # 进入姿态模式
+        bpy.ops.object.mode_set(mode='OBJECT')
+        context.view_layer.objects.active = target_obj
+        bpy.ops.object.mode_set(mode='POSE')
+        bpy.ops.pose.reveal()
+
+        # 5. 分配集合与颜色
+        assign_bones_to_collection(target_obj, valid_main, "主骨骼", 'THEME02')
+        assign_bones_to_collection(target_obj, valid_save, "保留骨骼", 'THEME09')
+
+        # 6+7+8. 一次性切到 EDIT 模式，批量处理所有合并与删除
+        armature_objs = get_armature_objects(context, target_obj)
+        
+        # 收集步骤6的合并对（特定合并），过滤不存在的骨骼
+        mapping_pairs = [(src, tgt) for src, tgt in bone_mapping.items()
+                         if src in pose_bone_names and tgt in pose_bone_names]
+        
+        # 收集步骤7的合并对（剩余骨骼合并至父级）
+        keep_bones = bone_main.union(bone_save)
+        bones_to_parent_names = pose_bone_names - keep_bones
+        
+        # 按层级从高到低排序，避免先删父级再处理子级的问题
+        parent_pairs = []
+        for b_name in bones_to_parent_names:
+            pb = target_obj.pose.bones.get(b_name)
+            if pb and pb.parent:
+                parent_pairs.append((b_name, pb.parent.name))
+        parent_pairs.sort(key=lambda p: len(target_obj.pose.bones[p[0]].parent_recursive), reverse=True)
+        
+        # 合并两组操作
+        all_merge_pairs = mapping_pairs + parent_pairs
+        bones_to_delete = set(b_name for b_name, _ in parent_pairs)
+        
+        if all_merge_pairs:
+            bpy.ops.object.mode_set(mode='EDIT')
+            edit_bones = target_obj.data.edit_bones
+            
+            for bone_name, target_name in all_merge_pairs:
+                edit_bone = edit_bones.get(bone_name)
+                if not edit_bone:
+                    continue
+                
+                # 将子骨骼的父级重指向目标骨骼
+                target_eb = edit_bones.get(target_name)
+                if target_eb:
+                    for child in list(edit_bone.children):
+                        child.parent = target_eb
+                
+                # 处理顶点组
+                for obj in armature_objs:
+                    if bone_name not in obj.vertex_groups:
+                        obj.vertex_groups.new(name=bone_name)
+                    if target_name not in obj.vertex_groups:
+                        obj.vertex_groups.new(name=target_name)
+                    merge_vertex_groups(obj, bone_name, target_name)
+                    if bone_name in obj.vertex_groups:
+                        obj.vertex_groups.remove(obj.vertex_groups[bone_name])
+                
+                bones_to_delete.add(bone_name)
+            
+            # 批量删除骨骼
+            for b_name in bones_to_delete:
+                eb = edit_bones.get(b_name)
+                if eb:
+                    edit_bones.remove(eb)
+            
+            bpy.ops.object.mode_set(mode='POSE')
+
+        # 9. 清理工作
+        bpy.ops.pose.select_all(action='SELECT')
+        bpy.ops.pose.constraints_clear()
+        
+        self.report({'INFO'}, "简化骨骼操作完成")
+        return {'FINISHED'}
+
+
+class O_only_BoneRenameMapping(bpy.types.Operator):
+    bl_idname = "xqfa.only_rename_mapping"
+    bl_label = "重命名"
+    bl_description = "将源骨架骨骼按csv对应, 重命名"
+
+    def execute(self, context):
+        if context.scene.xbone_csv_data == "":
+            self.report({'ERROR'}, "似乎没有导入csv")
+            return {'FINISHED'}
+        TargetArmature = context.active_object
+        if not TargetArmature or TargetArmature.type != 'ARMATURE':
+            self.report({'ERROR'}, "请先选中一个骨架对象")
+            return {'FINISHED'}
+        
+        csv_data = json.loads(context.scene["xbone_csv_data"])
+        current_skel_column = context.scene.current_skel_column
+        change_skel_column = context.scene.change_skel_column
+        bone_mapping = {}
+        for row in csv_data[1:]:
+            if len(row) <= max(current_skel_column, change_skel_column):
+                continue
+            key = str(row[current_skel_column])
+            value = str(row[change_skel_column])
+            if (key == "None") or (value == "None"):
+                continue
+            bone_mapping[key] = value
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.context.view_layer.objects.active = TargetArmature
+        bpy.ops.object.mode_set(mode='POSE')
+        rename_count = 0
+        for current_bone_name, change_bone_name in bone_mapping.items():
+            try:
+                TargetArmature.data.bones[current_bone_name].name = change_bone_name
+                rename_count += 1
+            except:
+                print(f"{current_bone_name}不存在")
+
+        scene = context.scene
+        if hasattr(scene, 'xqfa_vertex_group_mappings'):
+            mappings = scene.xqfa_vertex_group_mappings
+            item = mappings.add()
+            item.label = f"重命名映射 {len(mappings)}"
+            item.expanded = False
+            for current_bone_name, change_bone_name in bone_mapping.items():
+                p = item.pairs.add()
+                p.left_name = current_bone_name
+                p.right_name = change_bone_name
+                p.similarity = ""
+
+        self.report({'INFO'}, f"已重命名 {rename_count} 个骨骼")
+        return {'FINISHED'}
+
+
+########################## Divider ##########################
+
 def auto_set_vg_armature_handler(scene, depsgraph):
     """进入姿态模式时自动设置 vg_source_armature 为活动骨架"""
     if scene.vg_source_armature is None:
@@ -533,6 +799,24 @@ class P_VertexGroups(bpy.types.Panel):
         row.operator(O_SelectWeightedBones.bl_idname, text=O_SelectWeightedBones.bl_label, icon="LINENUMBERS_ON")
         row.operator(O_SelectUnweightedBones.bl_idname, text=O_SelectUnweightedBones.bl_label, icon="LINENUMBERS_ON")
 
+        box = layout.box()
+        box.operator(O_ImportCSV.bl_idname, icon="IMPORT")
+        col = box.column(align=True)
+        row = col.row(align=True)
+        row.prop(context.scene, "simple_main_column")
+        row.prop(context.scene, "simple_save_column")
+        row = col.row(align=True)
+        row.prop(context.scene, "simple_active_column")
+        row.prop(context.scene, "simple_toactive_column")
+        col.operator(O_BoneSimpleMapping.bl_idname, icon="PLAY")
+
+        box = layout.box()
+        col = box.column(align=True)
+        row = col.row(align=True)
+        row.prop(context.scene, "current_skel_column")
+        row.prop(context.scene, "change_skel_column")
+        col.operator(O_only_BoneRenameMapping.bl_idname, icon="PLAY")
+
 
 
 ########################## Divider ##########################
@@ -547,10 +831,55 @@ def register():
     bpy.utils.register_class(VG_OT_merge_to_parent)
     bpy.utils.register_class(VG_OT_merge_to_active)
     bpy.utils.register_class(VG_OT_delete_corresponding)
+    bpy.utils.register_class(O_ImportCSV)
+    bpy.utils.register_class(O_BoneSimpleMapping)
+    bpy.utils.register_class(O_only_BoneRenameMapping)
     bpy.utils.register_class(P_VertexGroups)
 
     bpy.types.Scene.vg_source_mesh = bpy.props.PointerProperty(type=bpy.types.Object, poll=ObjType.is_mesh)
     bpy.types.Scene.vg_source_armature = bpy.props.PointerProperty(type=bpy.types.Object, poll=ObjType.is_armature)
+
+    bpy.types.Scene.xbone_csv_data = bpy.props.StringProperty(
+        name="CSV Data",
+        description="Stores imported CSV data as JSON",
+        default=""
+    )
+    bpy.types.Scene.simple_main_column = bpy.props.IntProperty(
+        name="主骨骼",
+        description="主要骨骼的列索引",
+        default=1,
+        min=0,
+    )
+    bpy.types.Scene.simple_save_column = bpy.props.IntProperty(
+        name="保留骨",
+        description="可以后续调整物理的骨骼列索引",
+        default=2,
+        min=0,
+    )
+    bpy.types.Scene.simple_active_column = bpy.props.IntProperty(
+        name="指定骨",
+        description="",
+        default=3,
+        min=0,
+    )
+    bpy.types.Scene.simple_toactive_column = bpy.props.IntProperty(
+        name="合并到指定",
+        description="会被合并至指定的骨骼",
+        default=4,
+        min=0,
+    )
+    bpy.types.Scene.current_skel_column = bpy.props.IntProperty(
+        name="源名称",
+        description="源名称改为目标名称\n0是第1列",
+        default=1,
+        min=0,
+    )
+    bpy.types.Scene.change_skel_column = bpy.props.IntProperty(
+        name="目标名称",
+        description="源名称改为目标名称\n0是第1列",
+        default=0,
+        min=0,
+    )
 
     bpy.app.handlers.depsgraph_update_post.append(auto_set_vg_armature_handler)
 
@@ -564,6 +893,9 @@ def unregister():
     bpy.utils.unregister_class(VG_OT_merge_to_parent)
     bpy.utils.unregister_class(VG_OT_merge_to_active)
     bpy.utils.unregister_class(VG_OT_delete_corresponding)
+    bpy.utils.unregister_class(O_ImportCSV)
+    bpy.utils.unregister_class(O_BoneSimpleMapping)
+    bpy.utils.unregister_class(O_only_BoneRenameMapping)
     bpy.utils.unregister_class(P_VertexGroups)
 
     if auto_set_vg_armature_handler in bpy.app.handlers.depsgraph_update_post:
@@ -571,3 +903,11 @@ def unregister():
 
     del bpy.types.Scene.vg_source_mesh
     del bpy.types.Scene.vg_source_armature
+
+    del bpy.types.Scene.xbone_csv_data
+    del bpy.types.Scene.simple_main_column
+    del bpy.types.Scene.simple_save_column
+    del bpy.types.Scene.simple_toactive_column
+    del bpy.types.Scene.simple_active_column
+    del bpy.types.Scene.current_skel_column
+    del bpy.types.Scene.change_skel_column
